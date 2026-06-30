@@ -1,0 +1,20 @@
+{
+  "name": "digitalbuku-assessment-engine",
+  "version": "1.0.0",
+  "description": "Production‑ready assessment engine for generating leadership, DISC, values, competency, 360°, and psychometric reports from PDF and Excel inputs.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "doctor": "node scripts/doctor.js",
+    "build": "node scripts/build.js",
+    "validate": "node scripts/validate.js",
+    "test": "node tests/run-tests.js"
+  },
+  "author": "DigitalBuku",
+  "license": "MIT",
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "handlebars": "^4.7.8"
+  }
+}

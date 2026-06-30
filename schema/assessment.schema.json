@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "assessment.schema.json",
+  "title": "Assessment",
+  "type": "object",
+  "required": ["assessmentId", "title", "participants", "competencies", "scores", "reportConfig"],
+  "properties": {
+    "assessmentId": {"type": "string"},
+    "title": {"type": "string"},
+    "assessmentName": {"type": "string"},
+    "assessmentType": {"type": "string"},
+    "organization": {"type": "string"},
+    "createdAt": {"type": "string", "format": "date-time"},
+    "updatedAt": {"type": "string", "format": "date-time"},
+    "version": {"type": "string"},
+    "participants": {"type": "array", "items": {"$ref": "participant.schema.json"}},
+    "competencies": {"type": "array", "items": {"$ref": "competency.schema.json"}},
+    "scores": {"type": "object"},
+    "reportConfig": {"$ref": "report.schema.json"}
+  }
+}

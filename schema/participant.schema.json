@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "participant.schema.json",
+  "title": "Participant",
+  "type": "object",
+  "required": ["participantId", "name"],
+  "properties": {
+    "participantId": {"type": "string"},
+    "name": {"type": "string"},
+    "email": {"type": "string", "format": "email"},
+    "organization": {"type": "string"},
+    "position": {"type": "string"},
+    "metadata": {"type": "object"}
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "assessmentId": "ASM-001",
+  "title": "Assessment Kompetensi Digital",
+  "assessmentName": "Digital Competency Assessment Q2 2026",
+  "assessmentType": "competency",
+  "organization": "DigitalBuku",
+  "createdAt": "2026-06-30T10:00:00Z",
+  "updatedAt": "2026-06-30T10:00:00Z",
+  "version": "1.0.0",
+  "participants": [
+    {
+      "participantId": "P-001",
+      "name": "Randy Lumbantoruan",
+      "email": "randy@digitalbuku.id",
+      "organization": "DigitalBuku",
+      "position": "COO"
+    }
+  ],
+  "competencies": [
+    {
+      "competencyId": "C-001",
+      "name": "Evidence-Based Decision Making",
+      "description": "Kemampuan mengambil keputusan berbasis data",
+      "category": "leadership",
+      "weight": 0.8,
+      "indicators": ["Data literacy", "Statistical reasoning", "Experimentation mindset"]
+    }
+  ],
+  "scores": {
+    "P-001": {
+      "C-001": 85
+    }
+  },
+  "reportConfig": {
+    "format": "pdf",
+    "includeDetails": true,
+    "includeCharts": true
+  }
+}

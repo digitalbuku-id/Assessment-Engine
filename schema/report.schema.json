@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "report.schema.json",
+  "title": "Report Configuration",
+  "type": "object",
+  "required": ["format"],
+  "properties": {
+    "format": {"type": "string", "enum": ["pdf", "html", "json"]},
+    "template": {"type": "string"},
+    "includeDetails": {"type": "boolean"},
+    "includeCharts": {"type": "boolean"},
+    "customFields": {"type": "object"}
+  }
+}

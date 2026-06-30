@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "competency.schema.json",
+  "title": "Competency",
+  "type": "object",
+  "required": ["competencyId", "name"],
+  "properties": {
+    "competencyId": {"type": "string"},
+    "name": {"type": "string"},
+    "description": {"type": "string"},
+    "category": {"type": "string"},
+    "weight": {"type": "number", "minimum": 0, "maximum": 1},
+    "indicators": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  }
+}
