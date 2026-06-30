@@ -1,75 +1,40 @@
-/**
- * Template Engine for DigitalBuku Assessment Engine.
- * Uses Handlebars-style syntax ({{var}}, {{#each}}, {{#if}}) as approved.
- * Loads HTML templates from the 	emplates/ folder and renders them with provided data.
- */
+// components/template-engine.js
+export function renderTemplate(context) {
+  // Simple template: generate HTML from context
+  const { title, assessmentId, participants, competencies, scores, insights, recommendations } = context;
+  let tableRows = '';
+  participants?.forEach(p => {
+    let row = `<tr><td>${p.name}</td>`;
+    competencies?.forEach(c => {
+      row += `<td>${scores[p.id]?.[c.id] ?? '-'}</td>`;
+    });
+    row += '</tr>';
+    tableRows += row;
+  });
 
-import Handlebars from 'handlebars';
-import { readFileSync } from 'fs';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-// Resolve this module's directory (ESM)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-/**
- * Load a raw template file.
- * @param {string} name Template file name without extension (e.g.,  layout loads layout.html).
- * @returns {string} Template contents.
- */
-function loadTemplate(name) {
-  const templatePath = resolve(__dirname, '..', 'templates', `${name}.html`);
-  return readFileSync(templatePath, 'utf-8');
+  return `
+<!DOCTYPE html>
+<html>
+<head><title>${title || 'Assessment Report'}</title>
+<style>
+  body { font-family: Arial; padding: 20px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #ddd; padding: 8px; }
+  th { background: #f2f2f2; }
+</style>
+</head>
+<body>
+  <h1>${title || 'Assessment'}</h1>
+  <p><strong>ID:</strong> ${assessmentId}</p>
+  <h2>Scores</h2>
+  <table><thead><tr><th>Participant</th>${competencies?.map(c => `<th>${c.name}</th>`).join('')}</tr></thead>
+  <tbody>${tableRows}</tbody></table>
+  <h2>Insights</h2>
+  <p>${insights?.summary || ''}</p>
+  <h2>Recommendations</h2>
+  <ul>${recommendations?.map(r => `<li>${r}</li>`).join('')}</ul>
+  <p><small>Generated: ${new Date().toISOString()}</small></p>
+</body>
+</html>
+  `;
 }
-
-/**
- * Compile and cache a Handlebars template.
- * @param {string} name Template name.
- * @returns {Handlebars.TemplateDelegate} Compiled template function.
- */
-const templateCache = new Map();
-function getCompiledTemplate(name) {
-  if (templateCache.has(name)) return templateCache.get(name);
-  const raw = loadTemplate(name);
-  const compiled = Handlebars.compile(raw);
-  templateCache.set(name, compiled);
-  return compiled;
-}
-
-/**
- * Render a template with data.
- * @param {string} templateName Name of the template (without .html).
- * @param {Object} data Data object to inject into the template.
- * @returns {string} Rendered HTML string.
- */
-export function renderTemplate(templateName, data) {
-  const tmpl = getCompiledTemplate(templateName);
-  return tmpl(data);
-}
-
-/**
- * Register a Handlebars helper.
- * This allows the engine to be extended (e.g., date formatting) without editing core code.
- * @param {string} name Helper name.
- * @param {Function} fn Helper implementation.
- */
-export function registerHelper(name, fn) {
-  Handlebars.registerHelper(name, fn);
-}
-
-/**
- * Register a Handlebars partial.
- * Useful for reusable snippets (headers, footers, etc.).
- * @param {string} name Partial name.
- * @param {string} content Partial HTML content.
- */
-export function registerPartial(name, content) {
-  Handlebars.registerPartial(name, content);
-}
-
-export default {
-  renderTemplate,
-  registerHelper,
-  registerPartial
-};

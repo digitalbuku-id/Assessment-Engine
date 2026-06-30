@@ -1,20 +1,32 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import { buildAssessment } from '../components/assessment-builder.js';
+import { readFileSync } from 'fs';
 
-const requiredFolders = ['templates', 'schema', 'components'];
-const cwd = process.cwd();
-let missing = [];
-for (const folder of requiredFolders) {
-  if (!fs.existsSync(path.join(cwd, folder))) missing.push(folder);
+const green = '\u001b[32m';
+const red = '\u001b[31m';
+const yellow = '\u001b[33m';
+const reset = '\u001b[0m';
+
+async function main() {
+  console.log(`${yellow}Building Assessment Report...${reset}\n`);
+
+  const inputData = JSON.parse(
+    readFileSync('examples/sample-assessment.json', 'utf8')
+  );
+
+  const result = await buildAssessment(inputData);
+
+  if (result.success) {
+    console.log(`${green}Assessment built successfully!${reset}`);
+    console.log(`  HTML: ${result.files.html}`);
+    console.log(`  PDF:  ${result.files.pdf}`);
+  } else {
+    console.log(`${red}Build failed at ${result.stage}${reset}`);
+    console.log(`  Error: ${result.error}`);
+    process.exit(1);
+  }
 }
-// Check at least one template file exists
-const templateDir = path.join(cwd, 'templates');
-if (fs.existsSync(templateDir) && fs.readdirSync(templateDir).filter(f => f.endsWith('.html')).length === 0) {
-  missing.push('templates (no .html files)');
-}
-if (missing.length) {
-  console.error('Build failed. Missing:', missing.join(', '));
+
+main().catch(err => {
+  console.error(`${red}Fatal error:${reset}`, err);
   process.exit(1);
-}
-console.log('Build completed');
-process.exit(0);
+});

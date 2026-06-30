@@ -1,12 +1,13 @@
 {
   "name": "digitalbuku-assessment-engine",
   "version": "1.0.0",
-  "description": "Production‑ready assessment engine for generating leadership, DISC, values, competency, 360°, and psychometric reports from PDF and Excel inputs.",
+  "description": "Production-ready assessment engine for generating leadership, DISC, values, competency, 360°, and psychometric reports from PDF and Excel inputs.",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "doctor": "node scripts/doctor.js",
     "build": "node scripts/build.js",
+    "build:demo": "node scripts/build-demo.js",
     "validate": "node scripts/validate.js",
     "export-html": "node scripts/export-html.js",
     "test": "node tests/run-tests.js"
@@ -17,6 +18,7 @@
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "handlebars": "^4.7.8",
+    "pdf-parse": "^2.4.5",
     "puppeteer": "^25.2.1"
   }
 }

@@ -54,3 +54,15 @@ export function getChartConfig(type, labels, datasets, customOptions = {}) {
 //   [{ label: 'Sales', data: [10, 20, 30], backgroundColor: 'rgba(75,192,192,0.4)' }]
 // );
 // const myChart = new Chart(ctx, config);
+
+// components/chart-engine.js
+export function renderCharts(scores, validatedData) {
+  // Dummy chart data
+  return {
+    labels: validatedData?.competencies?.map(c => c.name) || [],
+    datasets: validatedData?.participants?.map(p => ({
+      label: p.name,
+      data: validatedData.competencies.map(c => scores[p.id]?.[c.id] ?? 0)
+    })) || []
+  };
+}

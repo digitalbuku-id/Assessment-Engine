@@ -26,7 +26,6 @@ export function preprocessAssessmentData(data) {
     const competencyScores = (data.competencies || []).map(c => {
       const score = participantScores[c.competencyId] ?? 0;
       
-      // Determine status and matching Bootstrap contextual classes
       let status = 'Needs Improvement';
       let statusClass = 'danger';
 
@@ -69,43 +68,49 @@ export function preprocessAssessmentData(data) {
 
 /**
  * Generates an HTML report from assessment JSON data and saves it to output path.
- * @param {Object|string} jsonDataOrPath - The raw assessment object or absolute/relative path to a JSON file.
+ * @param {Object|string} jsonDataOrPath - The raw assessment object or path to a JSON file.
  * @param {string} outputPath - Path where the final report.html should be saved.
  * @returns {Promise<string>} The generated HTML content.
  */
 export async function exportHtmlReport(jsonDataOrPath, outputPath) {
-  let rawData;
+  let data;
+  
+  // Load JSON data
   if (typeof jsonDataOrPath === 'string') {
-    const fullPath = path.resolve(jsonDataOrPath);
-    rawData = JSON.parse(fs.readFileSync(fullPath, 'utf-8'));
+    const rawContent = fs.readFileSync(jsonDataOrPath, 'utf-8');
+    data = JSON.parse(rawContent);
+  } else if (typeof jsonDataOrPath === 'object') {
+    data = jsonDataOrPath;
   } else {
-    rawData = jsonDataOrPath;
+    throw new Error('jsonDataOrPath must be a file path (string) or object');
   }
-
-  // Preprocess/transform the data
-  const preprocessed = preprocessAssessmentData(rawData);
-
-  // Render templates
-  const innerHtml = renderTemplate('report', preprocessed);
-  const finalHtml = renderTemplate('layout', {
-    ...preprocessed,
-    content: innerHtml
-  });
-
-  // Write to output path
-  if (outputPath) {
-    const absoluteOutputPath = path.resolve(outputPath);
-    const parentDir = path.dirname(absoluteOutputPath);
-    if (!fs.existsSync(parentDir)) {
-      fs.mkdirSync(parentDir, { recursive: true });
-    }
-    fs.writeFileSync(absoluteOutputPath, finalHtml, 'utf-8');
+  
+  // Preprocess data
+  const processedData = preprocessAssessmentData(data);
+  
+  // Render template
+  const htmlContent = renderTemplate(processedData);
+  
+  // Ensure output directory exists
+  const outputDir = path.dirname(outputPath);
+  if (outputDir && !fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
   }
-
-  return finalHtml;
+  
+  // Write HTML file
+  fs.writeFileSync(outputPath, htmlContent, 'utf-8');
+  
+  return htmlContent;
 }
+
+// Create local alias for default export
+const exportToHTML = exportHtmlReport;
+
+// Named export for compatibility
+export { exportToHTML };
 
 export default {
   preprocessAssessmentData,
-  exportHtmlReport
+  exportHtmlReport,
+  exportToHTML
 };
