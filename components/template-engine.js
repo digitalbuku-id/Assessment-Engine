@@ -19,7 +19,7 @@ const __dirname = dirname(__filename);
  * @returns {string} Template contents.
  */
 function loadTemplate(name) {
-  const templatePath = resolve(__dirname, '..', 'templates', ${name}.html);
+  const templatePath = resolve(__dirname, '..', 'templates', `${name}.html`);
   return readFileSync(templatePath, 'utf-8');
 }
 

@@ -1,0 +1,202 @@
+<div class="row my-4">
+  <div class="col-12">
+    <!-- Main header card with premium styling -->
+    <div class="card border-0 shadow-lg overflow-hidden text-white" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border-radius: 16px;">
+      <div class="card-body p-4 p-md-5">
+        <div class="d-flex flex-wrap justify-content-between align-items-center">
+          <div>
+            <span class="badge bg-light text-primary mb-2 fw-semibold px-3 py-2 text-uppercase" style="border-radius: 20px; font-size: 0.8rem; letter-spacing: 0.5px;">
+              {{assessmentType}}
+            </span>
+            <h2 class="display-5 fw-bold mb-1" style="letter-spacing: -1px;">{{assessmentName}}</h2>
+            <p class="lead mb-0 text-white-50">{{title}}</p>
+          </div>
+          <div class="mt-3 mt-md-0 bg-white bg-opacity-10 p-3 rounded-3 border border-white border-opacity-10">
+            <div class="small text-white-50">Organization</div>
+            <div class="fs-5 fw-semibold">{{organization}}</div>
+          </div>
+        </div>
+        
+        <hr class="my-4 border-white border-opacity-10" />
+        
+        <div class="row g-3 text-white-50 small">
+          <div class="col-6 col-sm-3">
+            <div>Assessment ID</div>
+            <div class="text-white fw-medium">{{assessmentId}}</div>
+          </div>
+          <div class="col-6 col-sm-3">
+            <div>Version</div>
+            <div class="text-white fw-medium">{{version}}</div>
+          </div>
+          <div class="col-6 col-sm-3">
+            <div>Created Date</div>
+            <div class="text-white fw-medium">{{formattedDate}}</div>
+          </div>
+          <div class="col-6 col-sm-3">
+            <div>Status</div>
+            <div class="text-white fw-medium">
+              <span class="d-inline-flex align-items-center gap-1">
+                <span class="bg-success rounded-circle" style="width: 8px; height: 8px; display: inline-block;"></span>
+                Completed
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Participant Details & Results -->
+<div class="row g-4">
+  {{#each participants}}
+  <div class="col-12">
+    <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+      <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+        <h4 class="card-title fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          {{name}}
+        </h4>
+        <span class="text-muted small">Participant ID: {{participantId}}</span>
+      </div>
+      <div class="card-body px-4 pb-4">
+        <!-- Participant Info Sub-card -->
+        <div class="row g-3 mb-4 p-3 bg-light rounded-3">
+          <div class="col-sm-4">
+            <span class="text-muted small d-block">Position</span>
+            <span class="fw-semibold text-dark">{{position}}</span>
+          </div>
+          <div class="col-sm-4">
+            <span class="text-muted small d-block">Email</span>
+            <span class="fw-semibold text-dark">{{email}}</span>
+          </div>
+          <div class="col-sm-4">
+            <span class="text-muted small d-block">Organization</span>
+            <span class="fw-semibold text-dark">{{organization}}</span>
+          </div>
+        </div>
+        
+        <h5 class="fw-semibold text-dark mb-3">Competency Scores & Analysis</h5>
+        
+        <div class="row g-4">
+          <!-- Competency List -->
+          <div class="col-12 {{#if ../reportConfig.includeCharts}}col-lg-7{{/if}}">
+            <div class="row g-3">
+              {{#each competencyScores}}
+              <div class="col-12 {{#unless ../../reportConfig.includeCharts}}col-md-6{{/unless}}">
+                <div class="p-3 border rounded-3 bg-white hover-shadow transition-all" style="border-color: #e9ecef!important; height: 100%;">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                      <h6 class="fw-bold mb-0 text-dark">{{competencyName}}</h6>
+                      <span class="badge bg-secondary-subtle text-secondary small text-capitalize my-1">{{category}}</span>
+                    </div>
+                    <span class="badge bg-{{statusClass}} px-2 py-1">{{status}}</span>
+                  </div>
+                  <p class="text-muted small mb-3">{{competencyDescription}}</p>
+                  
+                  <!-- Progress Bar -->
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="progress flex-grow-1" style="height: 10px; border-radius: 5px;">
+                      <div class="progress-bar bg-{{statusClass}}" role="progressbar" style="width: {{score}}%; border-radius: 5px;" aria-valuenow="{{score}}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <span class="fw-bold text-dark fs-5" style="min-width: 45px; text-align: right;">{{score}}%</span>
+                  </div>
+                  
+                  <!-- Indicators -->
+                  {{#if indicators}}
+                  <div class="mt-3">
+                    <span class="text-muted small d-block mb-1">Key Indicators Evaluated:</span>
+                    <div class="d-flex flex-wrap gap-1">
+                      {{#each indicators}}
+                      <span class="badge bg-light text-dark border small fw-normal">{{this}}</span>
+                      {{/each}}
+                    </div>
+                  </div>
+                  {{/if}}
+                </div>
+              </div>
+              {{/each}}
+            </div>
+          </div>
+
+          <!-- Radar Chart Column -->
+          {{#if ../reportConfig.includeCharts}}
+          <div class="col-12 col-lg-5 d-flex align-items-stretch">
+            <div class="card border-0 bg-light w-100 p-3 d-flex flex-column align-items-center justify-content-center" style="border-radius: 12px; min-height: 350px;">
+              <h6 class="fw-bold text-center text-dark mb-3">Competency Profile Chart</h6>
+              <div class="w-100" style="position: relative; height: 320px;">
+                <canvas id="chart-{{participantId}}"></canvas>
+              </div>
+            </div>
+          </div>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+  {{/each}}
+</div>
+
+{{#if reportConfig.includeCharts}}
+<!-- Include Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    {{#each participants}}
+    const ctx_{{participantId}} = document.getElementById('chart-{{participantId}}');
+    if (ctx_{{participantId}}) {
+      const labels = [];
+      const scores = [];
+      
+      {{#each competencyScores}}
+      labels.push("{{competencyName}}");
+      scores.push({{score}});
+      {{/each}}
+      
+      new Chart(ctx_{{participantId}}, {
+        type: 'radar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Score',
+            data: scores,
+            backgroundColor: 'rgba(13, 110, 253, 0.2)',
+            borderColor: 'rgba(13, 110, 253, 1)',
+            borderWidth: 2,
+            pointBackgroundColor: 'rgba(13, 110, 253, 1)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgba(13, 110, 253, 1)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              angleLines: { display: true },
+              suggestedMin: 0,
+              suggestedMax: 100,
+              ticks: { stepSize: 20 }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+    {{/each}}
+  });
+</script>
+{{/if}}
+
+<style>
+.hover-shadow {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-shadow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+</style>

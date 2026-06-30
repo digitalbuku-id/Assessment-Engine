@@ -1,4 +1,4 @@
-﻿// components/chart.js
+// components/chart.js
 // Reusable Chart.js wrapper for Radar, Bar, and Line charts.
 // Requires Chart.js v4+ to be loaded on the page (via CDN or bundler).
 
@@ -44,6 +44,39 @@ export function createBarChart(ctx, data, options = {}) {
 export function createLineChart(ctx, data, options = {}) {
   const config = {
     type: 'line',
+    data,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      ...options,
+    },
+  };
+  return new Chart(ctx, config);
+}
+
+/**
+ * Create a responsive Horizontal Bar chart.
+ */
+export function createHorizontalBarChart(ctx, data, options = {}) {
+  const config = {
+    type: 'bar',
+    data,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      ...options,
+    },
+  };
+  return new Chart(ctx, config);
+}
+
+/**
+ * Create a responsive Doughnut chart.
+ */
+export function createDoughnutChart(ctx, data, options = {}) {
+  const config = {
+    type: 'doughnut',
     data,
     options: {
       responsive: true,
