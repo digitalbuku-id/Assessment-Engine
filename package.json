@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Production-ready assessment engine for generating leadership, DISC, values, competency, 360°, and psychometric reports from PDF and Excel inputs.",
   "main": "index.js",
-  "type": "module",
+  
   "scripts": {
     "doctor": "node scripts/doctor.js",
     "build": "node scripts/build.js",
@@ -15,10 +15,29 @@
   "author": "DigitalBuku",
   "license": "MIT",
   "dependencies": {
-    "ajv": "^8.17.1",
+    "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
+    "chart.js": "^4.5.1",
+    "dotenv": "^17.4.2",
     "handlebars": "^4.7.8",
     "pdf-parse": "^2.4.5",
     "puppeteer": "^25.2.1"
+  },
+  "directories": {
+    "doc": "docs",
+    "example": "examples",
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/digitalbuku-id/Assessment-Engine.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/digitalbuku-id/Assessment-Engine/issues"
+  },
+  "homepage": "https://github.com/digitalbuku-id/Assessment-Engine#readme",
+  "devDependencies": {
+    "jest": "^30.4.2"
   }
 }

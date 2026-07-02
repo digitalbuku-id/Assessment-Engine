@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { renderTemplate } from './template-engine.js';
+import { renderTemplate } from './template-engine/index.js';
 
 /**
  * Transforms and preprocesses raw assessment data for the template engine.
@@ -27,17 +27,17 @@ export function preprocessAssessmentData(data) {
       const score = participantScores[c.competencyId] ?? 0;
       
       let status = 'Needs Improvement';
-      let statusClass = 'danger';
+      let statusClass = 'score-danger';
 
       if (score >= 85) {
         status = 'Excellent';
-        statusClass = 'success';
+        statusClass = 'score-excellent';
       } else if (score >= 70) {
         status = 'Good';
-        statusClass = 'info';
+        statusClass = 'score-good';
       } else if (score >= 50) {
         status = 'Satisfactory';
-        statusClass = 'warning';
+        statusClass = 'score-satisfactory';
       }
 
       return {
@@ -103,10 +103,10 @@ export async function exportHtmlReport(jsonDataOrPath, outputPath) {
   return htmlContent;
 }
 
-// Create local alias for default export
+// Create alias for compatibility
 const exportToHTML = exportHtmlReport;
 
-// Named export for compatibility
+// Named export
 export { exportToHTML };
 
 export default {
