@@ -64,7 +64,15 @@ class RecommendationEngine {
    * Validasi input. Returns error object jika invalid, null jika valid.
    */
   _validate(input) {
-    const { type, scores } = input;
+    const { type, scores, assessment_id } = input;
+
+    // ── MISSING_ASSESSMENT_ID ──
+    if (!assessment_id) {
+      return {
+        error: 'MISSING_ASSESSMENT_ID',
+        message: 'assessment_id is required.',
+      };
+    }
 
     // ── UNSUPPORTED_TYPE ──
     const typeConfig = thresholds[type];
@@ -75,7 +83,16 @@ class RecommendationEngine {
       };
     }
 
-    if (!scores) return null; // will be handled as empty
+    // ── INVALID_SCORES (null/undefined) ──
+    if (scores === null || scores === undefined) {
+      return {
+        error: 'INVALID_SCORES',
+        message: 'scores is required and must be an object.',
+      };
+    }
+
+    // Empty object {} → valid, will be handled as empty
+    if (Object.keys(scores).length === 0) return null;
 
     const allowedDims = typeConfig.dimensions;
 

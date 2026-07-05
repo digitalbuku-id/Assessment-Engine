@@ -247,37 +247,52 @@ strengths, weaknesses, next_best_action
 
 ### 1. Threshold Configuration (Externalized)
 
-Threshold **tidak hardcoded di kode**. Disimpan di file konfigurasi terpisah agar
+Threshold **tidak hardcode di kode**. Disimpan di file konfigurasi terpisah agar
 bisa di-tuning tanpa deploy ulang.
 
-```yaml
-# thresholds.yaml
-leadership:
-  strength_threshold: 80    # ≥ 80 → strength
-  weakness_threshold: 55    # ≤ 55 → weakness
-  # 56–79 → neutral (tidak muncul)
+**Implementasi MVP menggunakan file JavaScript** (`thresholds.js`, `reasons.js`, `actions.js`)
+yang di-load via `require()`. Tidak ada dependency YAML parser.
+
+Struktur konfigurasi (dalam JavaScript):
+
+```js
+// config/thresholds.js
+module.exports = {
+  leadership: {
+    strength_threshold: 80,    // ≥ 80 → strength
+    weakness_threshold: 55,    // ≤ 55 → weakness
+                               // 56–79 → neutral (tidak muncul)
+    dimensions: ['communication', 'decisiveness', 'strategic_thinking', 'people_development', 'execution'],
+    labels: { communication: 'Communication', /* ... */ },
+  },
+};
 ```
+
+> **Future enhancement:** Migrasi ke YAML apabila konfigurasi nanti dikelola oleh
+> non-developer (misal: product manager atau rubric designer). Saat ini `.js` cukup
+> karena config hanya diedit oleh developer.
 
 ### 2. Reason Template Catalog (Externalized)
 
 Setiap dimensi memiliki minimal 2 template: satu untuk strength, satu untuk weakness.
 Template menggunakan placeholder `{score}` yang di-substitusi saat runtime.
 
-```yaml
-# reasons.yaml
-leadership:
-  strengths:
-    communication:       "Skor {score} menunjukkan kamu komunikator yang efektif — mampu menyampaikan ide dengan jelas dan didengarkan oleh tim."
-    decisiveness:        "Skor {score} menunjukkan kamu mampu mengambil keputusan dengan cepat dan tepat, bahkan dalam situasi penuh tekanan."
-    strategic_thinking:  "Skor {score} menunjukkan kamu mampu melihat gambaran besar dan menyusun rencana jangka panjang dengan baik. Ini adalah fondasi penting dalam peran leadership."
-    people_development:  "Skor {score} menunjukkan kamu sudah membangun budaya mentorship dan pengembangan yang kuat dalam tim."
-    execution:           "Skor {score} menunjukkan kamu mampu mengeksekusi rencana menjadi hasil nyata secara konsisten."
-  weaknesses:
-    communication:       "Skor {score} menunjukkan ada ruang untuk meningkatkan kejelasan komunikasi, terutama dalam menyampaikan visi ke tim."
-    decisiveness:        "Skor {score} masih dalam zona menengah — ada ruang untuk meningkatkan kecepatan dan ketegasan dalam mengambil keputusan."
-    strategic_thinking:  "Skor {score} menunjukkan perlunya meluangkan waktu lebih banyak untuk perencanaan strategis jangka panjang."
-    people_development:  "Skor {score} berada di bawah threshold pengembangan tim. Ini bisa menjadi penghambat dalam membangun tim yang mandiri dan resilient."
-    execution:           "Skor {score} menunjukkan gap antara perencanaan dan eksekusi. Fokus pada follow-through akan sangat membantu."
+**MVP: File JavaScript** (`reasons.js`) — sama seperti thresholds, di-load via `require()`.
+
+```js
+// config/reasons.js
+module.exports = {
+  leadership: {
+    strengths: {
+      communication: "Skor {score} menunjukkan kamu komunikator yang efektif — mampu menyampaikan ide dengan jelas dan didengarkan oleh tim.",
+      // ... per dimensi
+    },
+    weaknesses: {
+      communication: "Skor {score} menunjukkan ada ruang untuk meningkatkan kejelasan komunikasi, terutama dalam menyampaikan visi ke tim.",
+      // ... per dimensi
+    },
+  },
+};
 ```
 
 ### 3. Action Library (Externalized)
@@ -285,24 +300,19 @@ leadership:
 Setiap dimensi memiliki **1 action default** untuk MVP. Action dipilih berdasarkan
 dimensi dengan skor terendah.
 
-```yaml
-# actions.yaml
-leadership:
-  communication:
-    action: "Mulai praktikkan active listening: dalam 2 minggu ke depan, di setiap meeting tim, paraphrase balik apa yang disampaikan anggota tim sebelum memberi respons."
-    rationale: "Communication adalah dimensi terendah ({score}). Meningkatkan kualitas mendengar adalah langkah pertama yang paling fundamental."
-  decisiveness:
-    action: "Terapkan decision deadline: untuk setiap keputusan yang kamu tunda, tetapkan batas waktu maksimal 48 jam untuk memutuskan."
-    rationale: "Decisiveness adalah dimensi terendah ({score}). Memasang deadline memaksa aksi dan mengurangi analysis paralysis."
-  strategic_thinking:
-    action: "Blok 2 jam setiap Jumat pagi untuk strategic deep work — review roadmap tim dan identifikasi 1 inisiatif jangka panjang."
-    rationale: "Strategic Thinking adalah dimensi terendah ({score}). Menyediakan waktu khusus secara rutin adalah kunci membangun kebiasaan berpikir strategis."
-  people_development:
-    action: "Jadwalkan sesi 1-on-1 mingguan dengan 3 direct report untuk mendiskusikan growth plan mereka. Target: dalam 4 minggu pertama."
-    rationale: "People Development adalah dimensi terendah ({score}). Membangun kebiasaan coaching rutin adalah langkah konkret pertama yang bisa langsung dijalankan."
-  execution:
-    action: "Gunakan metode 'Eat the Frog': setiap pagi, kerjakan task paling penting dan paling sulit sebelum jam 10 pagi selama 2 minggu."
-    rationale: "Execution adalah dimensi terendah ({score}). Membangun momentum pagi hari secara konsisten memperkuat muscle eksekusi."
+**MVP: File JavaScript** (`actions.js`) — di-load via `require()`.
+
+```js
+// config/actions.js
+module.exports = {
+  leadership: {
+    communication: {
+      action: "Mulai praktikkan active listening: dalam 2 minggu ke depan, di setiap meeting tim, paraphrase balik apa yang disampaikan anggota tim sebelum memberi respons.",
+      rationale: "Communication adalah dimensi terendah ({score}). Meningkatkan kualitas mendengar adalah langkah pertama yang paling fundamental.",
+    },
+    // ... per dimensi
+  },
+};
 ```
 
 ### 4. Determinism Guarantee
@@ -331,16 +341,16 @@ Client **wajib** memeriksa `version` sebelum melakukan parsing payload.
 Engine tidak terikat ke tipe `leadership`. Untuk menambah tipe assessment baru
 (misal: `negotiation`, `emotional_intelligence`), cukup:
 
-1. Tambah entry di `thresholds.yaml` (threshold per tipe)
-2. Tambah entry di `reasons.yaml` (template per tipe + dimensi)
-3. Tambah entry di `actions.yaml` (action per tipe + dimensi)
+1. Tambah entry di `thresholds.js` (threshold per tipe)
+2. Tambah entry di `reasons.js` (template per tipe + dimensi)
+3. Tambah entry di `actions.js` (action per tipe + dimensi)
 
 **Kode engine tidak perlu diubah.** Hanya config yang bertambah.
 
 ### 7. Bahasa Output
 
 Untuk MVP, semua reason text dan action text dalam **Bahasa Indonesia**.
-Ke depannya, file config bisa di-split per locale (`reasons_id.yaml`, `reasons_en.yaml`).
+Ke depannya, file config bisa di-split per locale (`reasons_id.js`, `reasons_en.js`).
 
 ---
 

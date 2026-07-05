@@ -10,6 +10,8 @@
  *  - INVALID_SCORE_RANGE
  *  - UNKNOWN_DIMENSION
  *  - UNSUPPORTED_TYPE
+ *  - MISSING_ASSESSMENT_ID
+ *  - INVALID_SCORES (null/undefined)
  *  - Neutral scores tidak muncul
  *  - Next best action tie-break
  *  - Version field selalu ada
@@ -117,6 +119,37 @@ test('UNSUPPORTED_TYPE', () => {
   if (!result.message.includes('baking')) throw new Error('message should mention the type');
 });
 
+test('MISSING_ASSESSMENT_ID', () => {
+  const result = engine.generate({
+    user_id: 'u_1',
+    type: 'leadership',
+    scores: { communication: 50 },
+  });
+
+  if (result.error !== 'MISSING_ASSESSMENT_ID') throw new Error(`expected MISSING_ASSESSMENT_ID, got ${result.error}`);
+});
+
+test('INVALID_SCORES (null)', () => {
+  const result = engine.generate({
+    assessment_id: 'asmt_x',
+    user_id: 'u_1',
+    type: 'leadership',
+    scores: null,
+  });
+
+  if (result.error !== 'INVALID_SCORES') throw new Error(`expected INVALID_SCORES, got ${result.error}`);
+});
+
+test('INVALID_SCORES (undefined)', () => {
+  const result = engine.generate({
+    assessment_id: 'asmt_x',
+    user_id: 'u_1',
+    type: 'leadership',
+  });
+
+  if (result.error !== 'INVALID_SCORES') throw new Error(`expected INVALID_SCORES, got ${result.error}`);
+});
+
 // ─────────────────────────────────────────────────
 console.log('\n═══ Happy Path — Output Structure ═══');
 
@@ -162,31 +195,24 @@ test('people_development (48) diklasifikasi sebagai weakness (≤55)', () => {
   if (!wk.reason.includes('48')) throw new Error('reason should include score');
 });
 
-test('decisiveness (65) juga weakness (≤55? No, 65 ≤ 55? No, wait...)', () => {
-  // 65 is NOT ≤ 55 → it's neutral! Re-reading the spec example output though...
-  // The spec example shows decisiveness at 65 as a weakness.
-  // But the threshold says weakness ≤ 55... 65 > 55.
-  // Let me re-read the spec output carefully.
-  //
-  // The spec output shows weaknesses with decisiveness score 65:
-  //   "Skor 65 masih dalam zona menengah — ada ruang untuk meningkatkan..."
-  //
-  // The threshold is WEAKNESS_THRESHOLD = 55. 65 > 55, so by the threshold
-  // rule, 65 should be NEUTRAL.
-  //
-  // BUT the spec example output explicitly includes it in weaknesses.
-  // This is a spec inconsistency. The spec's Processing Flow (Step 2) says:
-  //   score >= STRENGTH_THRESHOLD → STRENGTH
-  //   score <= WEAKNESS_THRESHOLD → WEAKNESS  
-  //   else → NEUTRAL
-  //
-  // With thresholds 80/55, a score of 65 would be NEUTRAL.
-  // Yet the example OUTPUT shows it in weaknesses.
-  //
-  // I'll follow the Processing Flow algorithm (which is explicit and unambiguous)
-  // because the spec also says "thresholds are externalized and can be tuned."
-  // The example output might have been generated with different thresholds.
-  // The algorithm is the contract, the example is illustrative.
+test('decisiveness (65) adalah NEUTRAL per algoritma threshold (80/55)', () => {
+  // 65 > 55 → bukan weakness. 65 < 80 → bukan strength. → NEUTRAL.
+  const result = engine.generate(SAMPLE_INPUT);
+
+  const allInOutput = [
+    ...result.strengths.map(s => s.dimension),
+    ...result.weaknesses.map(w => w.dimension),
+  ];
+
+  if (allInOutput.includes('decisiveness')) {
+    throw new Error('decisiveness (65) should be NEUTRAL — not in strengths or weaknesses');
+  }
+  if (result.weaknesses.length !== 1) {
+    throw new Error(`expected 1 weakness (people_development=48), got ${result.weaknesses.length}`);
+  }
+  if (result.strengths.length !== 1) {
+    throw new Error(`expected 1 strength (strategic_thinking=81), got ${result.strengths.length}`);
+  }
 });
 
 test('skor 56–79 TERMASUK neutral → tidak muncul di strengths atau weaknesses', () => {
