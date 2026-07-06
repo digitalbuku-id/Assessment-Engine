@@ -1,19 +1,25 @@
 # SPEC-001
 
-> **Title:** Recommendation Engine — MVP Format Output
+> **Title:** Recommendation Framework — MVP Format Output (Leadership Domain Pack)
 > **Author:** Hera (Chief Architect)
 > **Assignee:** Ares
 > **Priority:** High
 > **Status:** OPEN
 > **Parent Task:** TASK-001
-> **Version:** 1.0.0
+> **Version:** 1.1.0
+> **ADR:** [ADR-001](../docs/adr/ADR-001-recommendation-framework.md) — Core Engine + Domain Pack architecture
 
 ---
 
 ## Objective
 
-Menentukan format DSL dan JSON output untuk Recommendation Engine versi pertama
-yang akan dipakai assessment Leadership sebagai use case pertama.
+Menentukan format DSL dan JSON output untuk **Recommendation Framework** —
+arsitektur universal Core Engine + Domain Pack sebagaimana diputuskan di
+[ADR-001](../docs/adr/ADR-001-recommendation-framework.md).
+
+**Leadership adalah Domain Pack pertama** yang diimplementasikan dalam MVP ini.
+Domain pack lain (Competency, DISC, Sales, CPNS, UTBK) akan ditambahkan
+sebagai entry di file config tanpa mengubah kode Core Engine.
 
 **Must-have properties:**
 - **Deterministic** — input yang sama selalu menghasilkan output yang identik
@@ -26,60 +32,77 @@ yang akan dipakai assessment Leadership sebagai use case pertama.
 
 ## Architecture
 
+Recommendation Framework menggunakan arsitektur **Core Engine + Domain Pack**.
+Core Engine berisi pipeline processing yang type-agnostic; Domain Pack berisi
+semua domain knowledge (threshold, dimensi, label, reason template, action catalog).
+
 ```
- ┌─────────────────────┐
- │  Assessment Result   │
- │  (DTO JSON input)    │
- └──────────┬───────────┘
-            │
-            ▼
- ┌──────────────────────┐
- │   Validation Layer   │
- │  - score range check │
- │  - dimension check   │
- │  - empty input check │
- └──────────┬───────────┘
-            │
-            ▼
- ┌──────────────────────┐
- │     Rule Engine       │
- │                       │
- │  ┌─────────────────┐  │
- │  │  Threshold Map   │  │      ┌──────────────────┐
- │  │  (per tipe ases) │  │      │  Config File      │
- │  ├─────────────────┤  │◄─────│  thresholds.yaml  │
- │  │  Reason Catalog  │  │      └──────────────────┘
- │  │  (per dimensi)   │  │
- │  ├─────────────────┤  │      ┌──────────────────┐
- │  │  Action Library  │  │◄─────│  actions.yaml     │
- │  │  (per dimensi)   │  │      └──────────────────┘
- │  └─────────────────┘  │
- └──────────┬───────────┘
-            │
-            ▼
- ┌──────────────────────┐
- │   Output Builder      │
- │  - strengths[]        │
- │  - weaknesses[]       │
- │  - next_best_action   │
- │  - version            │
- └──────────┬───────────┘
-            │
-            ▼
- ┌──────────────────────┐
- │  Recommendation JSON  │
- └──────────────────────┘
+ ┌──────────────────────────────────────────────────────────────┐
+ │                   RECOMMENDATION FRAMEWORK                    │
+ │                                                              │
+ │  ┌─────────────────────┐                                     │
+ │  │  Assessment Result   │                                     │
+ │  │  (DTO JSON input)    │                                     │
+ │  └──────────┬───────────┘                                     │
+ │             │                                                 │
+ │             ▼                                                 │
+ │  ┌──────────────────────────────────────────────────────┐    │
+ │  │                 CORE ENGINE                           │    │
+ │  │  (type-agnostic — tidak pernah berubah per domain)    │    │
+ │  │                                                       │    │
+ │  │  ┌─────────────────┐   ┌────────────────────────┐    │    │
+ │  │  │   Validation     │   │   Classification        │    │    │
+ │  │  │  - score range   │   │  - strength / weakness  │    │    │
+ │  │  │  - dimension     │   │  - neutral filtering    │    │    │
+ │  │  │  - empty input   │   │                         │    │    │
+ │  │  └────────┬────────┘   └───────────┬─────────────┘    │    │
+ │  │           │                        │                   │    │
+ │  │  ┌────────┴────────────────────────┴─────────────┐    │    │
+ │  │  │   Threshold Evaluation + Reason Builder        │    │    │
+ │  │  │  - lookup config via input.type                │    │    │
+ │  │  │  - template substitution {score}               │    │    │
+ │  │  └──────────────────────┬────────────────────────┘    │    │
+ │  │                         │                              │    │
+ │  │  ┌──────────────────────┴────────────────────────┐    │    │
+ │  │  │   Next Best Action + Output Builder            │    │    │
+ │  │  │  - dimensi terendah → action                   │    │    │
+ │  │  │  - JSON assembly + versioning                  │    │    │
+ │  │  └───────────────────────────────────────────────┘    │    │
+ │  └──────────────────────────┬───────────────────────────┘    │
+ │                              │                                │
+ │                              ▼                                │
+ │  ┌──────────────────────────────────────────────────────┐    │
+ │  │                 DOMAIN PACK                            │    │
+ │  │  (domain knowledge — bertambah tanpa ubah Core)       │    │
+ │  │                                                       │    │
+ │  │  ┌──────────────┐  ┌──────────────┐  ┌─────────────┐ │    │
+ │  │  │  Leadership   │  │  Competency   │  │    DISC      │ │    │
+ │  │  │  ✅ MVP       │  │  🔜 needed   │  │   future     │ │    │
+ │  │  │               │  │               │  │              │ │    │
+ │  │  │  thresholds   │  │  thresholds   │  │  thresholds  │ │    │
+ │  │  │  reasons      │  │  reasons      │  │  reasons     │ │    │
+ │  │  │  actions      │  │  actions      │  │  actions     │ │    │
+ │  │  └──────────────┘  └──────────────┘  └─────────────┘ │    │
+ │  │                                                       │    │
+ │  │  ┌──────────────┐  ┌──────────────┐  ┌─────────────┐ │    │
+ │  │  │    Sales      │  │    CPNS       │  │    UTBK      │ │    │
+ │  │  │   future      │  │   future      │  │   future     │ │    │
+ │  │  └──────────────┘  └──────────────┘  └─────────────┘ │    │
+ │  └──────────────────────────────────────────────────────┘    │
+ └──────────────────────────────────────────────────────────────┘
 ```
 
 **Alur kerja:**
 1. Engine menerima DTO hasil assessment (skor per dimensi).
-2. Validation layer memeriksa range skor (0–100), dimensi yang dikenal, dan input kosong.
-3. Rule engine mengklasifikasikan setiap skor berdasarkan **threshold map** yang dikalibrasi.
-4. Untuk setiap klasifikasi, engine menarik **reason template** dari katalog dan melakukan substitusi variable.
-5. `next_best_action` dipilih dari **action library** berdasarkan dimensi dengan skor terendah.
+2. Validation layer memeriksa range skor (0–100), dimensi yang dikenal, dan input kosong — menggunakan config dari Domain Pack yang sesuai dengan `input.type`.
+3. Core Engine mengklasifikasikan setiap skor berdasarkan **threshold map** dari Domain Pack.
+4. Untuk setiap klasifikasi, Core Engine menarik **reason template** dari Domain Pack dan melakukan substitusi variable `{score}`.
+5. `next_best_action` dipilih dari **action library** Domain Pack berdasarkan dimensi dengan skor terendah.
 6. Output dikemas dengan field `version` mengikuti semver.
 
 **Tidak ada randomness, tidak ada AI/LLM call, tidak ada dependency eksternal runtime.** Murni lookup table + template substitution.
+
+**Pipeline tidak melakukan crosswalk semantik apapun.** Pipeline hanya mengirim `type` dan `scores`; semua domain knowledge (threshold, dimensi valid, template alasan, katalog aksi) berada di Domain Pack. Lihat [ADR-001](../docs/adr/ADR-001-recommendation-framework.md) untuk detail arsitektur.
 
 ---
 
@@ -336,16 +359,19 @@ Output selalu mengandung field `version` dengan format semver (`MAJOR.MINOR.PATC
 
 Client **wajib** memeriksa `version` sebelum melakukan parsing payload.
 
-### 6. Reusability Design
+### 6. Reusability Design (Domain Pack Architecture)
 
-Engine tidak terikat ke tipe `leadership`. Untuk menambah tipe assessment baru
-(misal: `negotiation`, `emotional_intelligence`), cukup:
+Engine tidak terikat ke tipe `leadership`. Framework menggunakan arsitektur
+**Core Engine + Domain Pack** sebagaimana diputuskan di
+[ADR-001](../docs/adr/ADR-001-recommendation-framework.md).
 
-1. Tambah entry di `thresholds.js` (threshold per tipe)
-2. Tambah entry di `reasons.js` (template per tipe + dimensi)
-3. Tambah entry di `actions.js` (action per tipe + dimensi)
+Untuk menambah tipe assessment baru (misal: `competency`, `disc`), cukup:
 
-**Kode engine tidak perlu diubah.** Hanya config yang bertambah.
+1. Tambah entry di `thresholds.js` (threshold, dimensi, label per tipe)
+2. Tambah entry di `reasons.js` (template strength + weakness per tipe + dimensi)
+3. Tambah entry di `actions.js` (action + rationale per tipe + dimensi)
+
+**Kode Core Engine tidak perlu diubah.** Hanya config Domain Pack yang bertambah.
 
 ### 7. Bahasa Output
 
