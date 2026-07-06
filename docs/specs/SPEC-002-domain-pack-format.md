@@ -90,8 +90,6 @@ module.exports = {
   description: '5-dimensi leadership assessment untuk mid-level manager',
   rubric_version: '2026-Q3',       // versi rubric yang digunakan
   locale: 'id',                    // bahasa default (default: 'id')
-  calibrated_by: null,             // nama rubric designer (untuk audit trail)
-  calibrated_at: null,             // ISO 8601 timestamp kalibrasi
 
   // ── DISPLAY ───────────────────────────────────────────
   labels: {                        // display label per dimensi (wajib — dari Sprint 1)
@@ -114,8 +112,6 @@ module.exports = {
 | `description` | string | no | Deskripsi singkat untuk dokumentasi |
 | `rubric_version` | string | no | Versi rubric yang digunakan (untuk traceability) |
 | `locale` | string | no | Kode bahasa ISO 639-1. Default: `'id'` |
-| `calibrated_by` | string | no | Nama rubric designer |
-| `calibrated_at` | string | no | ISO 8601 timestamp |
 
 ### 1b. `thresholds.js` — Threshold Map
 
@@ -248,7 +244,7 @@ module.exports = {
 |-------|------|----------|-------------|
 | Key | string | **yes** | `assessment_id` yang dikirim pipeline. Unique across seluruh registry |
 | `pack` | string | **yes** | `pack_id` yang sesuai — harus cocok dengan `metadata.pack_id` dari pack yang ada di `packs/` |
-| `version` | string | no | Versi pack yang di-expected. Untuk dokumentasi; resolver tidak memvalidasi kecocokan versi di MVP |
+| `version` | string | **yes** | Versi pack yang di-expected. **Wajib** — resolver memvalidasi kecocokan dengan `metadata.version`. |
 
 ### Runtime Behavior
 
@@ -268,10 +264,15 @@ loader.load("leadership") → merged pack config siap di-inject ke engine
 |------------|---------|----------|
 | `UNKNOWN_ASSESSMENT` | `assessment_id` tidak ada di registry | `{ "error": "UNKNOWN_ASSESSMENT", "message": "Assessment '...' is not registered." }` |
 | `UNRESOLVED_PACK` | `pack_id` dari registry tidak ada di `packs/` | `{ "error": "UNRESOLVED_PACK", "message": "Pack '...' referenced by assessment '...' does not exist." }` |
+| `VERSION_MISMATCH` | `registry.version` ≠ `metadata.version` | `{ "error": "VERSION_MISMATCH", "message": "Registry expects pack '...' version X but metadata has version Y." }` |
 
 > **Catatan:** `UNRESOLVED_PACK` seharusnya hanya terjadi saat development
 > (registry entry menunjuk ke pack yang belum dibuat). Di production, ini
 > adalah error konfigurasi yang harus dicegah oleh CI/CD.
+>
+> **Catatan:** `VERSION_MISMATCH` adalah validasi murah yang mencegah bug
+> diam-diam — misalnya registry diupdate ke versi baru tapi pack belum
+> di-deploy, atau sebaliknya. Engine TIDAK BOLEH start dengan version mismatch.
 
 ---
 
@@ -290,13 +291,15 @@ pack config yang sudah di-merge + divalidasi.
  * @returns {object}              — merged pack config (metadata + thresholds + reasons + actions)
  * @throws {UNKNOWN_ASSESSMENT}   — assessment_id tidak terdaftar di registry
  * @throws {UNRESOLVED_PACK}      — pack_id dari registry tidak ditemukan di packs/
+ * @throws {VERSION_MISMATCH}     — registry.version ≠ metadata.version
  * @throws {INVALID_PACK_CONFIG}  — pack tidak lolos completeness validation (section 1e)
  */
 function resolve(assessmentId) {
   // 1. lookup registry
-  // 2. load pack files via loader
-  // 3. validate completeness
-  // 4. return merged config object
+  // 2. validate registry.version === metadata.version
+  // 3. load pack files via loader
+  // 4. validate completeness
+  // 5. return merged config object
 }
 ```
 
@@ -463,12 +466,12 @@ Spesifikasi ini **tidak mencakup**:
 
 ## Open Questions
 
-| # | Question | Context |
-|---|----------|---------|
-| **Q1** | Apakah `metadata.calibrated_by` dan `calibrated_at` diperlukan di MVP? | Berguna untuk audit trail tapi tidak dipakai runtime. Bisa ditunda. |
-| **Q2** | Apakah perlu field `deprecated` di registry entry untuk menandai assessment versi lama? | Berguna saat ada migration assessment v1 → v2 tanpa menghapus entry lama. |
-| **Q3** | Apakah resolver perlu caching strategy selain in-memory Map? | MVP: in-memory cukup. Jika jumlah pack >100, bisa jadi bottleneck startup. |
-| **Q4** | Apakah `registry.version` perlu divalidasi terhadap `metadata.version`? | Bisa mencegah mismatch, tapi menambah kompleksitas. Tunda untuk MVP. |
+| # | Question | Context | Resolution |
+|---|----------|---------|------------|
+| **Q1** | ~~`calibrated_by` / `calibrated_at` di MVP?~~ | — | **Resolved:** Tunda. Dihapus dari spec. |
+| **Q2** | ~~Field `deprecated` di registry?~~ | — | **Resolved:** Tunda untuk MVP. |
+| **Q3** | ~~Validasi `registry.version` vs `metadata.version`?~~ | — | **Resolved:** Ya. Error `VERSION_MISMATCH` ditambahkan. |
+| **Q4** | Apakah resolver perlu caching strategy selain in-memory Map? | MVP: in-memory cukup. Jika jumlah pack >100, bisa jadi bottleneck startup. | **Resolved:** Tunda. In-memory Map cukup untuk skala sekarang. |
 
 ---
 
