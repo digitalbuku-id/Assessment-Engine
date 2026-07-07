@@ -240,6 +240,175 @@ test('engine via resolver correctly handles unknown dimension', () => {
 });
 
 // ─────────────────────────────────────────────────
+console.log('\n\u2550\u2550\u2550 Sprint 3C: Multi-Pack Architecture Validation \u2550\u2550\u2550');
+
+// ── Test 1: Loader loads 2 different packs without cache conflict ──
+test('loader.loadPack loads leadership + sample-domain-b without cache conflict', () => {
+  const lead = loadPack('leadership');
+  const sample = loadPack('sample-domain-b');
+
+  // Both return valid config
+  if (!lead) throw new Error('leadership pack should load');
+  if (!sample) throw new Error('sample-domain-b pack should load');
+
+  // Different pack_ids
+  if (lead.pack_id === sample.pack_id) throw new Error('pack_ids should differ');
+  if (lead.pack_id !== 'leadership') throw new Error('leadership pack_id mismatch');
+  if (sample.pack_id !== 'sample-domain-b') throw new Error('sample-domain-b pack_id mismatch');
+
+  // Different dimensions
+  if (lead.dimensions.length !== 5) throw new Error('leadership should have 5 dimensions');
+  if (sample.dimensions.length !== 3) throw new Error('sample-domain-b should have 3 dimensions');
+
+  // Cache is separate — second load returns same reference per pack
+  const lead2 = loadPack('leadership');
+  const sample2 = loadPack('sample-domain-b');
+  if (lead !== lead2) throw new Error('leadership cache should return same object');
+  if (sample !== sample2) throw new Error('sample-domain-b cache should return same object');
+  if (lead === sample) throw new Error('different packs should NOT share the same cached object');
+});
+
+// ── Test 2: resolver.resolve for both assessment_ids — no cross-contamination ──
+test('resolver.resolve returns correct config for both assessment_ids, no cross-leak', () => {
+  const lead = resolve('assessment-leadership-v2');
+  const sample = resolve('test-sample-domain-b-v1');
+
+  // No errors
+  if (lead.error) throw new Error(`leadership resolve should not error: ${lead.error}`);
+  if (sample.error) throw new Error(`sample-domain-b resolve should not error: ${sample.error}`);
+
+  // Correct pack_ids
+  if (lead.pack_id !== 'leadership') throw new Error(`expected leadership, got ${lead.pack_id}`);
+  if (sample.pack_id !== 'sample-domain-b') throw new Error(`expected sample-domain-b, got ${sample.pack_id}`);
+
+  // Leadership config does NOT contain sample-domain-b dimensions
+  if (lead.dimensions.includes('dimension_alpha')) throw new Error('leadership config leaked sample-domain-b dimension');
+  if (lead.dimensions.includes('dimension_beta')) throw new Error('leadership config leaked sample-domain-b dimension');
+  if (lead.dimensions.includes('dimension_gamma')) throw new Error('leadership config leaked sample-domain-b dimension');
+
+  // Sample-domain-b config does NOT contain leadership dimensions
+  if (sample.dimensions.includes('communication')) throw new Error('sample-domain-b config leaked leadership dimension');
+  if (sample.dimensions.includes('strategic_thinking')) throw new Error('sample-domain-b config leaked leadership dimension');
+
+  // Labels are correct per pack
+  if (!lead.labels.communication) throw new Error('leadership labels missing communication');
+  if (!sample.labels.dimension_alpha) throw new Error('sample-domain-b labels missing dimension_alpha');
+  if (lead.labels.dimension_alpha) throw new Error('leadership labels should not contain dimension_alpha');
+
+  // Reasons are correct per pack
+  if (!lead.reasons.strengths.communication) throw new Error('leadership reasons missing');
+  if (!sample.reasons.strengths.dimension_alpha) throw new Error('sample-domain-b reasons missing');
+  if (sample.reasons.strengths.communication) throw new Error('sample-domain-b reasons leaked leadership dimension');
+
+  // Actions are correct per pack
+  if (!lead.actions.communication) throw new Error('leadership actions missing');
+  if (!sample.actions.dimension_alpha) throw new Error('sample-domain-b actions missing');
+  if (sample.actions.communication) throw new Error('sample-domain-b actions leaked leadership dimension');
+});
+
+// ── Test 3: engine.generate with both packs — output matches respective pack, no cross-contamination ──
+test('engine.generate with leadership pack produces leadership output (no test pack text)', () => {
+  const leadConfig = resolve('assessment-leadership-v2');
+  const engine = new RecommendationEngine(leadConfig);
+  const result = engine.generate({
+    assessment_id: 'asmt-multi-001',
+    user_id: 'u-001',
+    type: 'leadership',
+    scores: { communication: 85, decisiveness: 40, strategic_thinking: 70, people_development: 55, execution: 60 },
+  });
+
+  if (result.error) throw new Error(`unexpected error: ${result.error}`);
+  if (result.type !== 'leadership') throw new Error(`expected type leadership, got ${result.type}`);
+
+  // Leadership output must NOT contain [TEST PACK] marker
+  const outputStr = JSON.stringify(result);
+  if (outputStr.includes('[TEST PACK]')) throw new Error('leadership output leaked [TEST PACK] marker');
+
+  // Should have at least 1 strength and 1 weakness
+  if (result.strengths.length === 0) throw new Error('expected at least 1 strength');
+  if (result.weaknesses.length === 0) throw new Error('expected at least 1 weakness');
+
+  // Strengths/weaknesses should reference leadership dimensions only
+  const allDims = [...result.strengths.map(s => s.dimension), ...result.weaknesses.map(w => w.dimension)];
+  if (allDims.includes('dimension_alpha')) throw new Error('leadership output leaked sample-domain-b dimension');
+});
+
+test('engine.generate with sample-domain-b pack produces test output (contains [TEST PACK])', () => {
+  const sampleConfig = resolve('test-sample-domain-b-v1');
+  const engine = new RecommendationEngine(sampleConfig);
+  const result = engine.generate({
+    assessment_id: 'asmt-multi-002',
+    user_id: 'u-002',
+    type: 'sample-domain-b',
+    scores: { dimension_alpha: 90, dimension_beta: 30, dimension_gamma: 65 },
+  });
+
+  if (result.error) throw new Error(`unexpected error: ${result.error}`);
+  if (result.type !== 'sample-domain-b') throw new Error(`expected type sample-domain-b, got ${result.type}`);
+
+  // Sample-domain-b output MUST contain [TEST PACK] marker
+  const outputStr = JSON.stringify(result);
+  if (!outputStr.includes('[TEST PACK]')) throw new Error('sample-domain-b output should contain [TEST PACK]');
+
+  // Should have exactly 1 strength (alpha=90 ≥ 80), 1 weakness (beta=30 ≤ 55)
+  if (result.strengths.length !== 1) throw new Error(`expected 1 strength, got ${result.strengths.length}`);
+  if (result.strengths[0].dimension !== 'dimension_alpha') throw new Error(`expected dimension_alpha strength`);
+  if (result.weaknesses.length !== 1) throw new Error(`expected 1 weakness, got ${result.weaknesses.length}`);
+  if (result.weaknesses[0].dimension !== 'dimension_beta') throw new Error(`expected dimension_beta weakness`);
+
+  // NBA should target the weakest dimension
+  if (result.next_best_action.focus_dimension !== 'dimension_beta') {
+    throw new Error(`expected NBA focus dimension_beta, got ${result.next_best_action.focus_dimension}`);
+  }
+
+  // Output must NOT contain leadership-specific terms
+  if (outputStr.includes('people_development')) throw new Error('sample-domain-b output leaked leadership dimension');
+  if (outputStr.includes('leadership')) throw new Error('sample-domain-b output leaked leadership pack_id');
+});
+
+test('engine.generate with both packs in sequence — no state leak between calls', () => {
+  const leadConfig = resolve('assessment-leadership-v2');
+  const sampleConfig = resolve('test-sample-domain-b-v1');
+
+  const leadEngine = new RecommendationEngine(leadConfig);
+  const sampleEngine = new RecommendationEngine(sampleConfig);
+
+  // Generate leadership first
+  const leadResult1 = leadEngine.generate({
+    assessment_id: 'asmt-seq-001', user_id: 'u-001', type: 'leadership',
+    scores: { communication: 90, decisiveness: 50, strategic_thinking: 70, people_development: 60, execution: 75 },
+  });
+
+  // Generate sample-domain-b
+  const sampleResult = sampleEngine.generate({
+    assessment_id: 'asmt-seq-002', user_id: 'u-002', type: 'sample-domain-b',
+    scores: { dimension_alpha: 30, dimension_beta: 85, dimension_gamma: 50 },
+  });
+
+  // Generate leadership again — should be identical to first call
+  const leadResult2 = leadEngine.generate({
+    assessment_id: 'asmt-seq-001', user_id: 'u-001', type: 'leadership',
+    scores: { communication: 90, decisiveness: 50, strategic_thinking: 70, people_development: 60, execution: 75 },
+  });
+
+  // Strip timestamps for comparison
+  const strip = (r) => { const { generated_at, ...rest } = r; return rest; };
+  if (JSON.stringify(strip(leadResult1)) !== JSON.stringify(strip(leadResult2))) {
+    throw new Error('leadership output changed after generating sample-domain-b — state leak detected');
+  }
+
+  // Verify sample result does not contain leadership data
+  if (JSON.stringify(sampleResult).includes('communication')) {
+    throw new Error('sample-domain-b output leaked leadership dimension after sequential calls');
+  }
+
+  // Both engines produce valid results
+  if (leadResult1.error || leadResult2.error || sampleResult.error) {
+    throw new Error('unexpected error in sequential generation');
+  }
+});
+
+// ─────────────────────────────────────────────────
 console.log(`\n${'═'.repeat(40)}`);
 console.log(`  Passed : ${passed}`);
 console.log(`  Failed : ${failed}`);
