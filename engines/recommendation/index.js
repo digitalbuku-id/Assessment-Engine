@@ -4,22 +4,32 @@
  * Deterministic, rule-based engine yang mengklasifikasikan skor assessment
  * menjadi strengths, weaknesses, dan next_best_action.
  *
- * Tidak ada randomness, tidak ada AI/LLM call, tidak ada dependency eksternal runtime.
- * Murni lookup table + template substitution.
+ * Config loading is abstracted: a packConfig (from resolver) can be injected,
+ * or the engine falls back to legacy config/ loading (backward compat).
+ *
+ * Classification logic, threshold evaluation, and NBA selection are unchanged
+ * from Sprint 1 — only config access is refactored.
  *
  * @author Ares
  * @version 1.0.0
  */
 
-const thresholds = require('./config/thresholds');
-const reasons = require('./config/reasons');
-const actions = require('./config/actions');
+// Legacy config (backward compatibility — will be removed after full migration)
+const _legacyThresholds = require('./config/thresholds');
+const _legacyReasons = require('./config/reasons');
+const _legacyActions = require('./config/actions');
 
 const ENGINE_VERSION = '1.0.0';
 
 class RecommendationEngine {
-  constructor() {
+  /**
+   * @param {object|null} packConfig — resolved pack config from resolver (new path).
+   *                                   When null, engine falls back to legacy config/
+   *                                   lookup by input.type (backward compat).
+   */
+  constructor(packConfig = null) {
     this.version = ENGINE_VERSION;
+    this._packConfig = packConfig;
   }
 
   // ──────────────────────────────────────────────
@@ -32,28 +42,72 @@ class RecommendationEngine {
    * @param {Object} input — DTO hasil assessment
    * @param {string} input.assessment_id
    * @param {string} input.user_id
-   * @param {string} input.type
+   * @param {string} input.type          — legacy: digunakan sbg key config lookup
    * @param {Object<string,number>} input.scores
    * @returns {Object} output JSON atau error response
    */
   generate(input) {
+    // Resolve config: injected packConfig takes precedence, else legacy lookup
+    const config = this._getConfig(input);
+
+    // If config resolved to an error, return it
+    if (config && config.error) return config;
+
     // Step 1: Validate
-    const validationError = this._validate(input);
+    const validationError = this._validate(input, config);
     if (validationError) return validationError;
 
     // Step 1b: Handle empty scores (valid case, bukan error)
     if (!input.scores || Object.keys(input.scores).length === 0) {
-      return this._buildEmpty(input);
+      return this._buildEmpty(input, config);
     }
 
     // Step 2–3: Classify each dimension → strengths & weaknesses
-    const { strengths, weaknesses } = this._classify(input);
+    const { strengths, weaknesses } = this._classify(input, config);
 
     // Step 4: Select next best action (dimensi terendah)
-    const nextBestAction = this._selectAction(input);
+    const nextBestAction = this._selectAction(input, config);
 
     // Step 5: Build & return output
-    return this._buildOutput(input, strengths, weaknesses, nextBestAction);
+    return this._buildOutput(input, config, strengths, weaknesses, nextBestAction);
+  }
+
+  // ──────────────────────────────────────────────
+  //  Config resolution
+  // ──────────────────────────────────────────────
+
+  /**
+   * Returns the active pack config for this input.
+   * - If packConfig was injected in constructor → use it directly
+   * - Otherwise → legacy lookup by input.type
+   */
+  _getConfig(input) {
+    if (this._packConfig) return this._packConfig;
+    return this._resolveLegacy(input.type);
+  }
+
+  /**
+   * Bridges legacy config/ format into the new merged-pack format.
+   * This preserves backward compatibility and is temporary — it will be
+   * removed once all consumers migrate to resolver-based loading.
+   */
+  _resolveLegacy(type) {
+    const t = _legacyThresholds[type];
+    if (!t) return null;
+
+    const r = _legacyReasons[type];
+    const a = _legacyActions[type];
+
+    return {
+      pack_id: type,
+      version: this.version,
+      dimensions: t.dimensions,
+      labels: t.labels,
+      strength_threshold: t.strength_threshold,
+      weakness_threshold: t.weakness_threshold,
+      reasons: r,
+      actions: a,
+    };
   }
 
   // ──────────────────────────────────────────────
@@ -63,7 +117,7 @@ class RecommendationEngine {
   /**
    * Validasi input. Returns error object jika invalid, null jika valid.
    */
-  _validate(input) {
+  _validate(input, config) {
     const { type, scores, assessment_id } = input;
 
     // ── MISSING_ASSESSMENT_ID ──
@@ -75,8 +129,7 @@ class RecommendationEngine {
     }
 
     // ── UNSUPPORTED_TYPE ──
-    const typeConfig = thresholds[type];
-    if (!typeConfig) {
+    if (!config) {
       return {
         error: 'UNSUPPORTED_TYPE',
         message: `Assessment type '${type}' is not supported yet.`,
@@ -94,7 +147,7 @@ class RecommendationEngine {
     // Empty object {} → valid, will be handled as empty
     if (Object.keys(scores).length === 0) return null;
 
-    const allowedDims = typeConfig.dimensions;
+    const allowedDims = config.dimensions;
 
     for (const [dimension, score] of Object.entries(scores)) {
       // ── INVALID_SCORE_RANGE ──
@@ -125,10 +178,9 @@ class RecommendationEngine {
    * Klasifikasikan setiap skor sebagai STRENGTH (≥ threshold) atau
    * WEAKNESS (≤ threshold). Skor di antaranya = NEUTRAL, tidak masuk output.
    */
-  _classify(input) {
-    const { type, scores } = input;
-    const config = thresholds[type];
-    const reasonCatalog = reasons[type];
+  _classify(input, config) {
+    const { scores } = input;
+    const reasonCatalog = config.reasons;
     const labels = config.labels;
 
     const strengths = [];
@@ -165,10 +217,10 @@ class RecommendationEngine {
    * Pilih aksi berdasarkan dimensi dengan skor terendah.
    * Tie-break: urutan pertama dalam input (deterministic).
    */
-  _selectAction(input) {
-    const { type, scores } = input;
-    const actionCatalog = actions[type];
-    const labels = thresholds[type].labels;
+  _selectAction(input, config) {
+    const { scores } = input;
+    const actionCatalog = config.actions;
+    const labels = config.labels;
 
     if (!scores || Object.keys(scores).length === 0) return null;
 
@@ -197,24 +249,24 @@ class RecommendationEngine {
   //  Step 5: Output Builder
   // ──────────────────────────────────────────────
 
-  _buildOutput(input, strengths, weaknesses, nextBestAction) {
+  _buildOutput(input, config, strengths, weaknesses, nextBestAction) {
     return {
       version: ENGINE_VERSION,
       generated_at: new Date().toISOString(),
       assessment_id: input.assessment_id,
-      type: input.type,
+      type: config.pack_id || input.type,
       strengths,
       weaknesses,
       next_best_action: nextBestAction,
     };
   }
 
-  _buildEmpty(input) {
+  _buildEmpty(input, config) {
     return {
       version: ENGINE_VERSION,
       generated_at: new Date().toISOString(),
       assessment_id: input.assessment_id,
-      type: input.type,
+      type: config ? (config.pack_id || input.type) : input.type,
       strengths: [],
       weaknesses: [],
       next_best_action: null,
