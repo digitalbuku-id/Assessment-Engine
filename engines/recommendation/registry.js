@@ -11,4 +11,8 @@ module.exports = {
     pack: 'leadership',
     version: '1.0.0',
   },
+  'test-sample-domain-b-v1': {
+    pack: 'sample-domain-b',
+    version: '1.0.0',
+  },
 };
