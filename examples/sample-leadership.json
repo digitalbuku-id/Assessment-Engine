@@ -1,0 +1,75 @@
+{
+  "assessmentId": "assessment-leadership-v2",
+  "title": "Leadership Assessment — Test Data (Sprint 4B)",
+  "assessmentName": "Leadership Competency Assessment Q3 2026",
+  "assessmentType": "leadership",
+  "organization": "DigitalBuku (Internal Test)",
+  "createdAt": "2026-07-07T10:00:00Z",
+  "updatedAt": "2026-07-07T10:00:00Z",
+  "version": "1.0.0",
+  "participants": [
+    {
+      "participantId": "P-LEAD-001",
+      "name": "Arya Wirayuda",
+      "email": "arya@digitalbuku.test",
+      "organization": "DigitalBuku",
+      "position": "VP Engineering"
+    }
+  ],
+  "competencies": [
+    {
+      "competencyId": "communication",
+      "name": "Communication",
+      "description": "Kemampuan menyampaikan ide, visi, dan arahan dengan jelas ke tim",
+      "category": "leadership",
+      "weight": 0.9,
+      "indicators": ["Clarity of message", "Active listening", "Audience adaptation"]
+    },
+    {
+      "competencyId": "decisiveness",
+      "name": "Decisiveness",
+      "description": "Kemampuan mengambil keputusan tepat waktu, bahkan dalam situasi tekanan",
+      "category": "leadership",
+      "weight": 0.85,
+      "indicators": ["Decision speed", "Risk assessment", "Commitment to decisions"]
+    },
+    {
+      "competencyId": "strategic_thinking",
+      "name": "Strategic Thinking",
+      "description": "Kemampuan melihat gambaran besar dan menyusun rencana jangka panjang",
+      "category": "leadership",
+      "weight": 0.9,
+      "indicators": ["Long-term planning", "Systems thinking", "Scenario analysis"]
+    },
+    {
+      "competencyId": "people_development",
+      "name": "People Development",
+      "description": "Kemampuan membangun, membimbing, dan mengembangkan anggota tim",
+      "category": "leadership",
+      "weight": 0.8,
+      "indicators": ["Mentoring", "Growth planning", "Feedback culture"]
+    },
+    {
+      "competencyId": "execution",
+      "name": "Execution",
+      "description": "Kemampuan mengeksekusi rencana menjadi hasil nyata secara konsisten",
+      "category": "leadership",
+      "weight": 0.85,
+      "indicators": ["Follow-through", "Resource management", "Obstacle removal"]
+    }
+  ],
+  "scores": {
+    "P-LEAD-001": {
+      "communication": 88,
+      "decisiveness": 52,
+      "strategic_thinking": 91,
+      "people_development": 45,
+      "execution": 72
+    }
+  },
+  "reportConfig": {
+    "format": "html",
+    "includeDetails": true,
+    "includeCharts": true
+  }
+}
