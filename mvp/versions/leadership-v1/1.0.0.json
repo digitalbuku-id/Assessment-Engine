@@ -1,0 +1,123 @@
+{
+  "version": "1.0.0",
+  "hash": "e118daacfd5a699d33cef47f3ec3a6cf2999021bda47dec59843357a512d5060",
+  "registeredAt": "2026-07-02T09:53:23.263Z",
+  "config": {
+    "dimensions": {
+      "motivation": {
+        "name": "Motivation",
+        "weight": 0.25,
+        "formula": "weighted_average",
+        "questions": [
+          {
+            "id": "q1",
+            "weight": 1,
+            "reverse": false
+          }
+        ],
+        "categories": []
+      },
+      "decision_making": {
+        "name": "Decision Making",
+        "weight": 0.25,
+        "formula": "weighted_average",
+        "questions": [
+          {
+            "id": "q2",
+            "weight": 1,
+            "reverse": false
+          }
+        ],
+        "categories": []
+      },
+      "delegation": {
+        "name": "Delegation",
+        "weight": 0.25,
+        "formula": "weighted_average",
+        "questions": [
+          {
+            "id": "q3",
+            "weight": 1,
+            "reverse": false
+          }
+        ],
+        "categories": []
+      },
+      "feedback": {
+        "name": "Feedback",
+        "weight": 0.25,
+        "formula": "weighted_average",
+        "questions": [
+          {
+            "id": "q4",
+            "weight": 1,
+            "reverse": false
+          }
+        ],
+        "categories": []
+      }
+    },
+    "formulas": {
+      "dimension": "weighted_average",
+      "overall": "weighted_average"
+    },
+    "rules": [
+      {
+        "condition": {
+          "all": [
+            {
+              "fact": "overall",
+              "operator": ">=",
+              "value": 80
+            }
+          ]
+        },
+        "action": {
+          "category": "High",
+          "recommendation": "Siap untuk peran leadership senior"
+        }
+      },
+      {
+        "condition": {
+          "all": [
+            {
+              "fact": "overall",
+              "operator": ">=",
+              "value": 60
+            },
+            {
+              "fact": "overall",
+              "operator": "<",
+              "value": 80
+            }
+          ]
+        },
+        "action": {
+          "category": "Medium",
+          "recommendation": "Perlu pengembangan lebih lanjut"
+        }
+      },
+      {
+        "condition": {
+          "all": [
+            {
+              "fact": "overall",
+              "operator": "<",
+              "value": 60
+            }
+          ]
+        },
+        "action": {
+          "category": "Low",
+          "recommendation": "Perlu training leadership fundamental"
+        }
+      }
+    ],
+    "metadata": {
+      "createdAt": "2026-07-02T09:53:23.254Z",
+      "author": "unknown",
+      "tags": [],
+      "releaseNotes": ""
+    }
+  }
+}

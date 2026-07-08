@@ -1,0 +1,541 @@
+{
+  "schema": {
+    "version": "3.0.0",
+    "type": "assessment_snapshot"
+  },
+  "metadata": {
+    "snapshotId": "SNP-MR3CBBH4-8G8FEW",
+    "createdAt": "2026-07-02T10:06:55.192Z",
+    "engineVersion": "3.0.0"
+  },
+  "participant": {
+    "name": "Agenth Ermes",
+    "email": "agenhermes@gmail.com",
+    "company": "Agent Hermes Indonesia"
+  },
+  "assessment": {
+    "id": "leadership-v1",
+    "version": "1.0.0",
+    "name": "Leadership Competency Assessment",
+    "description": "Assessment untuk mengukur kompetensi leadership",
+    "maxScale": 5,
+    "dimensions": {
+      "motivation": {
+        "name": "Motivation",
+        "weight": 0.25,
+        "formula": "weighted_average",
+        "questions": [
+          {
+            "id": "q1",
+            "weight": 1,
+            "reverse": false
+          }
+        ],
+        "categories": []
+      },
+      "decision_making": {
+        "name": "Decision Making",
+        "weight": 0.25,
+        "formula": "weighted_average",
+        "questions": [
+          {
+            "id": "q2",
+            "weight": 1,
+            "reverse": false
+          }
+        ],
+        "categories": []
+      },
+      "delegation": {
+        "name": "Delegation",
+        "weight": 0.25,
+        "formula": "weighted_average",
+        "questions": [
+          {
+            "id": "q3",
+            "weight": 1,
+            "reverse": false
+          }
+        ],
+        "categories": []
+      },
+      "feedback": {
+        "name": "Feedback",
+        "weight": 0.25,
+        "formula": "weighted_average",
+        "questions": [
+          {
+            "id": "q4",
+            "weight": 1,
+            "reverse": false
+          }
+        ],
+        "categories": []
+      }
+    },
+    "formulas": {
+      "dimension": "weighted_average",
+      "overall": "weighted_average"
+    },
+    "rules": [
+      {
+        "condition": {
+          "all": [
+            {
+              "fact": "overall",
+              "operator": ">=",
+              "value": 80
+            }
+          ]
+        },
+        "action": {
+          "category": "High",
+          "recommendation": "Siap untuk peran leadership senior"
+        }
+      },
+      {
+        "condition": {
+          "all": [
+            {
+              "fact": "overall",
+              "operator": ">=",
+              "value": 60
+            },
+            {
+              "fact": "overall",
+              "operator": "<",
+              "value": 80
+            }
+          ]
+        },
+        "action": {
+          "category": "Medium",
+          "recommendation": "Perlu pengembangan lebih lanjut"
+        }
+      },
+      {
+        "condition": {
+          "all": [
+            {
+              "fact": "overall",
+              "operator": "<",
+              "value": 60
+            }
+          ]
+        },
+        "action": {
+          "category": "Low",
+          "recommendation": "Perlu training leadership fundamental"
+        }
+      }
+    ],
+    "metadata": {
+      "createdAt": "2026-07-02T10:06:55.181Z",
+      "author": "unknown",
+      "tags": [],
+      "releaseNotes": ""
+    }
+  },
+  "responses": {
+    "q1": 2,
+    "q2": 3,
+    "q3": 4,
+    "q4": 5
+  },
+  "calculation": {
+    "formulas": {
+      "results": {
+        "motivation": {
+          "value": 40,
+          "formula": "weighted_average",
+          "version": "4.0.0",
+          "confidence": 1,
+          "source": [
+            "value_0"
+          ],
+          "metadata": {
+            "id": "weighted_average",
+            "version": "4.0.0",
+            "description": "Menghitung rata-rata tertimbang",
+            "author": "AceLearning",
+            "supportedInput": [
+              "number"
+            ]
+          },
+          "rawValue": 2,
+          "normalized": true,
+          "maxScale": 5
+        },
+        "decision_making": {
+          "value": 60,
+          "formula": "weighted_average",
+          "version": "4.0.0",
+          "confidence": 1,
+          "source": [
+            "value_0"
+          ],
+          "metadata": {
+            "id": "weighted_average",
+            "version": "4.0.0",
+            "description": "Menghitung rata-rata tertimbang",
+            "author": "AceLearning",
+            "supportedInput": [
+              "number"
+            ]
+          },
+          "rawValue": 3,
+          "normalized": true,
+          "maxScale": 5
+        },
+        "delegation": {
+          "value": 80,
+          "formula": "weighted_average",
+          "version": "4.0.0",
+          "confidence": 1,
+          "source": [
+            "value_0"
+          ],
+          "metadata": {
+            "id": "weighted_average",
+            "version": "4.0.0",
+            "description": "Menghitung rata-rata tertimbang",
+            "author": "AceLearning",
+            "supportedInput": [
+              "number"
+            ]
+          },
+          "rawValue": 4,
+          "normalized": true,
+          "maxScale": 5
+        },
+        "feedback": {
+          "value": 100,
+          "formula": "weighted_average",
+          "version": "4.0.0",
+          "confidence": 1,
+          "source": [
+            "value_0"
+          ],
+          "metadata": {
+            "id": "weighted_average",
+            "version": "4.0.0",
+            "description": "Menghitung rata-rata tertimbang",
+            "author": "AceLearning",
+            "supportedInput": [
+              "number"
+            ]
+          },
+          "rawValue": 5,
+          "normalized": true,
+          "maxScale": 5
+        },
+        "overall": {
+          "value": 70,
+          "formula": "weighted_average",
+          "version": "4.0.0",
+          "confidence": 1,
+          "source": [
+            "value_0",
+            "value_1",
+            "value_2",
+            "value_3"
+          ],
+          "metadata": {
+            "id": "weighted_average",
+            "version": "4.0.0",
+            "description": "Menghitung rata-rata tertimbang",
+            "author": "AceLearning",
+            "supportedInput": [
+              "number"
+            ]
+          },
+          "rawValue": 70,
+          "normalized": true,
+          "maxScale": 5
+        }
+      },
+      "calculatedAt": "2026-07-02T10:06:55.185Z",
+      "formulaVersion": "4.0.0",
+      "maxScale": 5,
+      "normalizationFactor": 20,
+      "formulasUsed": {
+        "dimensions": {
+          "motivation": "weighted_average",
+          "decision_making": "weighted_average",
+          "delegation": "weighted_average",
+          "feedback": "weighted_average"
+        },
+        "overall": "weighted_average"
+      }
+    },
+    "rules": {
+      "results": [
+        {
+          "rule": {
+            "all": [
+              {
+                "fact": "overall",
+                "operator": ">=",
+                "value": 60
+              },
+              {
+                "fact": "overall",
+                "operator": "<",
+                "value": 80
+              }
+            ]
+          },
+          "action": {
+            "category": "Medium",
+            "recommendation": "Perlu pengembangan lebih lanjut"
+          },
+          "matchedAt": "2026-07-02T10:06:55.187Z"
+        }
+      ],
+      "evaluatedAt": "2026-07-02T10:06:55.187Z",
+      "totalRules": 3,
+      "matchedRules": 1,
+      "facts": {
+        "motivation": 40,
+        "decision_making": 60,
+        "delegation": 80,
+        "feedback": 100,
+        "overall": 70
+      }
+    }
+  },
+  "result": {
+    "scores": {
+      "motivation": {
+        "value": 40,
+        "formula": "weighted_average",
+        "version": "4.0.0",
+        "confidence": 1,
+        "source": [
+          "value_0"
+        ],
+        "metadata": {
+          "id": "weighted_average",
+          "version": "4.0.0",
+          "description": "Menghitung rata-rata tertimbang",
+          "author": "AceLearning",
+          "supportedInput": [
+            "number"
+          ]
+        },
+        "rawValue": 2,
+        "normalized": true,
+        "maxScale": 5
+      },
+      "decision_making": {
+        "value": 60,
+        "formula": "weighted_average",
+        "version": "4.0.0",
+        "confidence": 1,
+        "source": [
+          "value_0"
+        ],
+        "metadata": {
+          "id": "weighted_average",
+          "version": "4.0.0",
+          "description": "Menghitung rata-rata tertimbang",
+          "author": "AceLearning",
+          "supportedInput": [
+            "number"
+          ]
+        },
+        "rawValue": 3,
+        "normalized": true,
+        "maxScale": 5
+      },
+      "delegation": {
+        "value": 80,
+        "formula": "weighted_average",
+        "version": "4.0.0",
+        "confidence": 1,
+        "source": [
+          "value_0"
+        ],
+        "metadata": {
+          "id": "weighted_average",
+          "version": "4.0.0",
+          "description": "Menghitung rata-rata tertimbang",
+          "author": "AceLearning",
+          "supportedInput": [
+            "number"
+          ]
+        },
+        "rawValue": 4,
+        "normalized": true,
+        "maxScale": 5
+      },
+      "feedback": {
+        "value": 100,
+        "formula": "weighted_average",
+        "version": "4.0.0",
+        "confidence": 1,
+        "source": [
+          "value_0"
+        ],
+        "metadata": {
+          "id": "weighted_average",
+          "version": "4.0.0",
+          "description": "Menghitung rata-rata tertimbang",
+          "author": "AceLearning",
+          "supportedInput": [
+            "number"
+          ]
+        },
+        "rawValue": 5,
+        "normalized": true,
+        "maxScale": 5
+      },
+      "overall": {
+        "value": 70,
+        "formula": "weighted_average",
+        "version": "4.0.0",
+        "confidence": 1,
+        "source": [
+          "value_0",
+          "value_1",
+          "value_2",
+          "value_3"
+        ],
+        "metadata": {
+          "id": "weighted_average",
+          "version": "4.0.0",
+          "description": "Menghitung rata-rata tertimbang",
+          "author": "AceLearning",
+          "supportedInput": [
+            "number"
+          ]
+        },
+        "rawValue": 70,
+        "normalized": true,
+        "maxScale": 5
+      }
+    },
+    "categories": [
+      {
+        "rule": {
+          "all": [
+            {
+              "fact": "overall",
+              "operator": ">=",
+              "value": 60
+            },
+            {
+              "fact": "overall",
+              "operator": "<",
+              "value": 80
+            }
+          ]
+        },
+        "action": {
+          "category": "Medium",
+          "recommendation": "Perlu pengembangan lebih lanjut"
+        },
+        "matchedAt": "2026-07-02T10:06:55.187Z"
+      }
+    ],
+    "overall": {
+      "value": 70,
+      "formula": "weighted_average",
+      "version": "4.0.0",
+      "confidence": 1,
+      "source": [
+        "value_0",
+        "value_1",
+        "value_2",
+        "value_3"
+      ],
+      "metadata": {
+        "id": "weighted_average",
+        "version": "4.0.0",
+        "description": "Menghitung rata-rata tertimbang",
+        "author": "AceLearning",
+        "supportedInput": [
+          "number"
+        ]
+      },
+      "rawValue": 70,
+      "normalized": true,
+      "maxScale": 5
+    }
+  },
+  "audit": {
+    "trail": [
+      {
+        "timestamp": "2026-07-02T10:06:55.182Z",
+        "engine": "definition",
+        "action": "UPDATE",
+        "key": "assessment",
+        "outputChecksum": "5d1b567ab32eb162f2d7b7318e161a2a",
+        "status": "SUCCESS"
+      },
+      {
+        "timestamp": "2026-07-02T10:06:55.185Z",
+        "engine": "formula",
+        "action": "CREATE",
+        "key": "formulas",
+        "outputChecksum": "12d3b38c92ab32b6e60198a47f9767f4",
+        "status": "SUCCESS"
+      },
+      {
+        "timestamp": "2026-07-02T10:06:55.185Z",
+        "engine": "context",
+        "action": "SEAL",
+        "key": "formulas"
+      },
+      {
+        "timestamp": "2026-07-02T10:06:55.187Z",
+        "engine": "rule",
+        "action": "CREATE",
+        "key": "rules",
+        "outputChecksum": "bdfb151282623c09decd09fdcd12ca51",
+        "status": "SUCCESS"
+      },
+      {
+        "timestamp": "2026-07-02T10:06:55.187Z",
+        "engine": "context",
+        "action": "SEAL",
+        "key": "rules"
+      },
+      {
+        "timestamp": "2026-07-02T10:06:55.189Z",
+        "engine": "version",
+        "action": "CREATE",
+        "key": "version",
+        "outputChecksum": "c82306a29892ef51f854c1272bddbb24",
+        "status": "SUCCESS"
+      },
+      {
+        "timestamp": "2026-07-02T10:06:55.189Z",
+        "engine": "context",
+        "action": "SEAL",
+        "key": "version"
+      },
+      {
+        "timestamp": "2026-07-02T10:06:55.191Z",
+        "engine": "unknown",
+        "action": "CREATE",
+        "key": "executionGraph",
+        "outputChecksum": "f6cec93a5d5d3f72e45b6a731e8bd7f7",
+        "status": "SUCCESS"
+      },
+      {
+        "timestamp": "2026-07-02T10:06:55.191Z",
+        "engine": "context",
+        "action": "SEAL",
+        "key": "executionGraph"
+      }
+    ],
+    "pipelineLog": null
+  },
+  "version": {
+    "assessmentVersion": "1.0.0",
+    "configHash": "e118daacfd5a699d33cef47f3ec3a6cf2999021bda47dec59843357a512d5060",
+    "formulaVersion": "4.0.0"
+  },
+  "signature": "9cae337aebc4db61e7ca6008b43b10154f36c94c7fb4fccf95de5a1655cdc54e"
+}

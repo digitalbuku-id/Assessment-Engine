@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assessment - AceLearning</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; }
+    .btn-group .btn { padding: 12px 0; }
+    .btn-check:checked + .btn-outline-primary { 
+      background-color: #667eea; 
+      color: white; 
+      border-color: #667eea;
+    }
+    .question-card { border-left: 4px solid #667eea; }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card shadow">
+          <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Leadership Assessment</h4>
+          </div>
+          <div class="card-body">
+            <form id="assessmentForm">
+              <div class="mb-3">
+                <label class="form-label fw-bold">Nama Lengkap</label>
+                <input type="text" class="form-control" name="name" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold">Email</label>
+                <input type="email" class="form-control" name="email" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold">Perusahaan</label>
+                <input type="text" class="form-control" name="company" required>
+              </div>
+              
+              <hr class="my-4">
+              <h5 class="mb-4">Pertanyaan Leadership</h5>
+              <p class="text-muted">Pilih skala 1-5 yang paling menggambarkan diri Anda.</p>
+              
+              <div class="card question-card mb-4">
+                <div class="card-body">
+                  <p class="fw-bold mb-3">1. Saya mampu memotivasi tim untuk mencapai target.</p>
+                  <div class="btn-group w-100" role="group">
+                    <input type="radio" class="btn-check" name="q1" value="1" id="q1-1" required>
+                    <label class="btn btn-outline-primary" for="q1-1">1</label>
+                    <input type="radio" class="btn-check" name="q1" value="2" id="q1-2">
+                    <label class="btn btn-outline-primary" for="q1-2">2</label>
+                    <input type="radio" class="btn-check" name="q1" value="3" id="q1-3">
+                    <label class="btn btn-outline-primary" for="q1-3">3</label>
+                    <input type="radio" class="btn-check" name="q1" value="4" id="q1-4">
+                    <label class="btn btn-outline-primary" for="q1-4">4</label>
+                    <input type="radio" class="btn-check" name="q1" value="5" id="q1-5">
+                    <label class="btn btn-outline-primary" for="q1-5">5</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card question-card mb-4">
+                <div class="card-body">
+                  <p class="fw-bold mb-3">2. Saya mampu mengambil keputusan sulit dengan cepat.</p>
+                  <div class="btn-group w-100" role="group">
+                    <input type="radio" class="btn-check" name="q2" value="1" id="q2-1" required>
+                    <label class="btn btn-outline-primary" for="q2-1">1</label>
+                    <input type="radio" class="btn-check" name="q2" value="2" id="q2-2">
+                    <label class="btn btn-outline-primary" for="q2-2">2</label>
+                    <input type="radio" class="btn-check" name="q2" value="3" id="q2-3">
+                    <label class="btn btn-outline-primary" for="q2-3">3</label>
+                    <input type="radio" class="btn-check" name="q2" value="4" id="q2-4">
+                    <label class="btn btn-outline-primary" for="q2-4">4</label>
+                    <input type="radio" class="btn-check" name="q2" value="5" id="q2-5">
+                    <label class="btn btn-outline-primary" for="q2-5">5</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card question-card mb-4">
+                <div class="card-body">
+                  <p class="fw-bold mb-3">3. Saya mampu mendelegasikan tugas dengan efektif.</p>
+                  <div class="btn-group w-100" role="group">
+                    <input type="radio" class="btn-check" name="q3" value="1" id="q3-1" required>
+                    <label class="btn btn-outline-primary" for="q3-1">1</label>
+                    <input type="radio" class="btn-check" name="q3" value="2" id="q3-2">
+                    <label class="btn btn-outline-primary" for="q3-2">2</label>
+                    <input type="radio" class="btn-check" name="q3" value="3" id="q3-3">
+                    <label class="btn btn-outline-primary" for="q3-3">3</label>
+                    <input type="radio" class="btn-check" name="q3" value="4" id="q3-4">
+                    <label class="btn btn-outline-primary" for="q3-4">4</label>
+                    <input type="radio" class="btn-check" name="q3" value="5" id="q3-5">
+                    <label class="btn btn-outline-primary" for="q3-5">5</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card question-card mb-4">
+                <div class="card-body">
+                  <p class="fw-bold mb-3">4. Saya mampu memberikan feedback yang konstruktif.</p>
+                  <div class="btn-group w-100" role="group">
+                    <input type="radio" class="btn-check" name="q4" value="1" id="q4-1" required>
+                    <label class="btn btn-outline-primary" for="q4-1">1</label>
+                    <input type="radio" class="btn-check" name="q4" value="2" id="q4-2">
+                    <label class="btn btn-outline-primary" for="q4-2">2</label>
+                    <input type="radio" class="btn-check" name="q4" value="3" id="q4-3">
+                    <label class="btn btn-outline-primary" for="q4-3">3</label>
+                    <input type="radio" class="btn-check" name="q4" value="4" id="q4-4">
+                    <label class="btn btn-outline-primary" for="q4-4">4</label>
+                    <input type="radio" class="btn-check" name="q4" value="5" id="q4-5">
+                    <label class="btn btn-outline-primary" for="q4-5">5</label>
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-lg w-100 mt-4">
+                Submit Assessment
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  document.getElementById('assessmentForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      company: formData.get('company'),
+      responses: {
+        q1: parseInt(formData.get('q1')),
+        q2: parseInt(formData.get('q2')),
+        q3: parseInt(formData.get('q3')),
+        q4: parseInt(formData.get('q4'))
+      }
+    };
+
+    try {
+      const response = await fetch('/api/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        // Redirect ke result page dengan snapshotId
+        window.location.href = `/result?snapshotId=${result.snapshotId}`;
+      } else {
+        alert('Error: ' + result.error);
+      }
+    } catch (error) {
+      alert('Terjadi kesalahan. Silakan coba lagi.');
+      console.error(error);
+    }
+  });
+</script>
+</body>
+</html>

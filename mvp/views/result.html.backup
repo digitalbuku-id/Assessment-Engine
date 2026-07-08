@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hasil Assessment - AceLearning</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { background-color: #f8f9fa; }
+    .score-display { font-size: 5rem; font-weight: bold; color: #0d6efd; }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-10">
+        <div id="report" class="card shadow">
+          <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Leadership Assessment Report</h4>
+          </div>
+          <div class="card-body">
+            <div class="mb-4">
+              <h5>Participant Information</h5>
+              <div class="row">
+                <div class="col-md-6">
+                  <p><strong>Nama:</strong> <span id="participantName"></span></p>
+                  <p><strong>Email:</strong> <span id="participantEmail"></span></p>
+                </div>
+                <div class="col-md-6">
+                  <p><strong>Perusahaan:</strong> <span id="participantCompany"></span></p>
+                  <p><strong>Tanggal:</strong> <span id="assessmentDate"></span></p>
+                </div>
+              </div>
+            </div>
+
+            <hr>
+
+            <div class="mb-4 text-center">
+              <h5>Overall Leadership Score</h5>
+              <div class="score-display" id="overallScore"></div>
+              <p class="lead" id="scoreCategory"></p>
+            </div>
+
+            <hr>
+
+            <div class="mb-4">
+              <h5>Competency Breakdown</h5>
+              <div class="text-center">
+                <canvas id="radarChart" style="max-width: 500px; margin: 0 auto;"></canvas>
+              </div>
+            </div>
+
+            <hr>
+
+            <div class="mb-4">
+              <h5>Dimension Scores</h5>
+              <div id="dimensionScores"></div>
+            </div>
+
+            <hr>
+
+            <div class="mb-4">
+              <h5>Recommendation</h5>
+              <div class="alert alert-info" id="recommendation"></div>
+            </div>
+          </div>
+          <div class="card-footer text-center">
+            <button id="downloadPdf" class="btn btn-success btn-lg me-2">
+              📥 Download PDF Report
+            </button>
+            <a href="/" class="btn btn-outline-primary btn-lg">
+               Back to Home
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+  console.log('=== Loading Assessment Result ===');
+  
+  // Get snapshotId from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const snapshotId = urlParams.get('snapshotId');
+  console.log('Snapshot ID:', snapshotId);
+
+  if (!snapshotId) {
+    alert('No assessment data found. Please take the assessment first.');
+    window.location.href = '/assessment';
+  }
+
+  // Fetch snapshot from server
+  fetch(`/api/snapshot/${snapshotId}`)
+    .then(res => {
+      console.log('Fetch response status:', res.status);
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+      return res.json();
+    })
+    .then(snapshot => {
+      console.log('Snapshot loaded:', snapshot);
+      renderAssessment(snapshot);
+    })
+    .catch(err => {
+      console.error('Fetch error:', err);
+      alert('Failed to load assessment data: ' + err.message);
+      window.location.href = '/assessment';
+    });
+
+  function renderAssessment(snapshot) {
+    console.log('=== Rendering Assessment ===');
+    
+    try {
+      // Validate snapshot structure (RC1 format)
+      if (!snapshot.participant) {
+        throw new Error('Participant data is missing');
+      }
+      
+      if (!snapshot.calculation || !snapshot.calculation.formulas || !snapshot.calculation.formulas.results) {
+        throw new Error('Calculation data is missing');
+      }
+
+      // Extract data from snapshot RC1 structure
+      const participant = snapshot.participant;
+      const formulas = snapshot.calculation.formulas.results;
+      const rules = snapshot.calculation.rules?.results || [];
+      const createdAt = snapshot.metadata?.createdAt || snapshot.createdAt;
+
+      console.log('Participant:', participant);
+      console.log('Formulas:', formulas);
+      console.log('Rules:', rules);
+
+      // Participant info
+      document.getElementById('participantName').textContent = participant.name || 'N/A';
+      document.getElementById('participantEmail').textContent = participant.email || 'N/A';
+      document.getElementById('participantCompany').textContent = participant.company || 'N/A';
+      document.getElementById('assessmentDate').textContent = new Date(createdAt).toLocaleString('id-ID');
+
+      // Overall score
+      const overall = formulas.overall?.value || 0;
+      const category = rules[0]?.action?.category || 'Unknown';
+      const recommendation = rules[0]?.action?.recommendation || 'No recommendation available';
+
+      console.log('Overall:', overall, 'Category:', category);
+      
+      document.getElementById('overallScore').textContent = overall;
+      document.getElementById('scoreCategory').textContent = `Category: ${category}`;
+      document.getElementById('recommendation').textContent = recommendation;
+
+      // Dimension scores
+      const dimensionScoresDiv = document.getElementById('dimensionScores');
+      dimensionScoresDiv.innerHTML = '';
+      
+      const dimensions = {};
+      
+      Object.entries(formulas)
+        .filter(([key]) => key !== 'overall')
+        .forEach(([key, data]) => {
+          const dimName = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          const value = data?.value || 0;
+          dimensions[dimName] = value;
+
+          console.log(`Dimension ${key}: ${value}`);
+
+          const div = document.createElement('div');
+          div.className = 'mb-3';
+          div.innerHTML = `
+            <div class="d-flex justify-content-between mb-1">
+              <span class="fw-bold">${dimName}</span>
+              <strong>${value}/100</strong>
+            </div>
+            <div class="progress" style="height: 25px;">
+              <div class="progress-bar bg-primary" style="width: ${value}%">${value}%</div>
+            </div>
+          `;
+          dimensionScoresDiv.appendChild(div);
+        });
+
+      // Radar Chart
+      const ctx = document.getElementById('radarChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: Object.keys(dimensions),
+          datasets: [{
+            label: 'Score',
+            data: Object.values(dimensions),
+            backgroundColor: 'rgba(13, 110, 253, 0.2)',
+            borderColor: 'rgba(13, 110, 253, 1)',
+            pointBackgroundColor: 'rgba(13, 110, 253, 1)',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          scales: {
+            r: { beginAtZero: true, max: 100 }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+
+      // Download PDF button
+      const downloadBtn = document.getElementById('downloadPdf');
+      downloadBtn.onclick = async () => {
+        downloadBtn.innerHTML = '⏳ Generating...';
+        downloadBtn.disabled = true;
+
+        try {
+          const response = await fetch('/api/report/pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ snapshotId })
+          });
+
+          if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `leadership-assessment-${participant.name?.replace(/\s+/g, '-') || 'report'}.pdf`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            downloadBtn.innerHTML = '✅ Downloaded!';
+          } else {
+            throw new Error(`Server error: ${response.status}`);
+          }
+        } catch (error) {
+          console.error('PDF error:', error);
+          alert('Failed to generate PDF: ' + error.message);
+          downloadBtn.innerHTML = '📥 Download PDF Report';
+        }
+        downloadBtn.disabled = false;
+      };
+
+      console.log('=== Assessment rendered successfully ===');
+    } catch (error) {
+      console.error('=== Render Error ===');
+      console.error('Error:', error);
+      console.error('Stack:', error.stack);
+      console.error('Snapshot:', snapshot);
+      alert('Error displaying assessment: ' + error.message);
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "assessmentId": "leadership-v1",
+  "latest": "1.0.0",
+  "versions": {
+    "1.0.0": {
+      "hash": "e118daacfd5a699d33cef47f3ec3a6cf2999021bda47dec59843357a512d5060",
+      "registeredAt": "2026-07-02T09:53:23.263Z",
+      "deprecated": false,
+      "schemaVersion": "1.0",
+      "releaseNotes": "",
+      "compatibleReportVersion": "1.0.0",
+      "compatibleFormulaVersion": "4.0.0"
+    }
+  }
+}
