@@ -1,34 +1,36 @@
 /**
  * Leadership Domain Pack — Metadata
  *
- * @migrated-from engines/recommendation/config/thresholds.js (dimensions + labels)
+ * Aligned to Canonical Domain Model (ADR-003):
+ *   assessments/leadership/config.json
+ *
+ * MAJOR version bump (1.0.0 → 2.0.0): dimensions changed from 5 to 4.
+ *
  * @pack_id  leadership
- * @version  1.0.0
+ * @version  2.0.0  (MAJOR — breaking dimension change per SPEC-001)
  */
 module.exports = {
   // ── REQUIRED ──────────────────────────────────────────
   pack_id: 'leadership',
   display_name: 'Leadership Assessment',
-  version: '1.0.0',
+  version: '2.0.0',
   dimensions: [
-    'communication',
-    'decisiveness',
-    'strategic_thinking',
-    'people_development',
-    'execution',
+    'motivation',
+    'decision_making',
+    'delegation',
+    'feedback',
   ],
 
   // ── OPTIONAL ──────────────────────────────────────────
-  description: '5-dimensi leadership assessment untuk mid-level manager',
+  description: '4-dimensi leadership assessment (Canonical Model ADR-003)',
   rubric_version: '2026-Q3',
   locale: 'id',
 
   // ── DISPLAY ───────────────────────────────────────────
   labels: {
-    communication: 'Communication',
-    decisiveness: 'Decisiveness',
-    strategic_thinking: 'Strategic Thinking',
-    people_development: 'People Development',
-    execution: 'Execution',
+    motivation: 'Motivation',
+    decision_making: 'Decision Making',
+    delegation: 'Delegation',
+    feedback: 'Feedback',
   },
 };

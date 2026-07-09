@@ -1,41 +1,36 @@
 /**
  * Leadership Domain Pack — Action Library
  *
- * Semua action MIGRATED dari config/actions.js (Sprint 1).
- * Placeholder {score} di-substitusi saat runtime oleh Core Engine.
- * JANGAN ubah wording tanpa revisi rubric.
+ * Aligned to Canonical Domain Model (ADR-003): 4 dimensi.
  *
- * @migrated-from engines/recommendation/config/actions.js[leadership]
+ * ⚠️  SEMUA action saat ini adalah PLACEHOLDER.
+ *     Wording final akan ditulis di TASK-017 oleh rubric designer.
+ *
+ * @placeholder-for  TASK-017 (Wording)
  */
 module.exports = {
-  communication: {
+  motivation: {
     action:
-      'Mulai praktikkan active listening: dalam 2 minggu ke depan, di setiap meeting tim, paraphrase balik apa yang disampaikan anggota tim sebelum memberi respons.',
+      '[PLACEHOLDER - TASK-017] Recommended action for Motivation at score {score}',
     rationale:
-      'Communication adalah dimensi terendah ({score}). Meningkatkan kualitas mendengar adalah langkah pertama yang paling fundamental.',
+      '[PLACEHOLDER - TASK-017] Rationale for selecting Motivation as next best action (score {score})',
   },
-  decisiveness: {
+  decision_making: {
     action:
-      'Terapkan decision deadline: untuk setiap keputusan yang kamu tunda, tetapkan batas waktu maksimal 48 jam untuk memutuskan.',
+      '[PLACEHOLDER - TASK-017] Recommended action for Decision Making at score {score}',
     rationale:
-      'Decisiveness adalah dimensi terendah ({score}). Memasang deadline memaksa aksi dan mengurangi analysis paralysis.',
+      '[PLACEHOLDER - TASK-017] Rationale for selecting Decision Making as next best action (score {score})',
   },
-  strategic_thinking: {
+  delegation: {
     action:
-      'Blok 2 jam setiap Jumat pagi untuk strategic deep work — review roadmap tim dan identifikasi 1 inisiatif jangka panjang.',
+      '[PLACEHOLDER - TASK-017] Recommended action for Delegation at score {score}',
     rationale:
-      'Strategic Thinking adalah dimensi terendah ({score}). Menyediakan waktu khusus secara rutin adalah kunci membangun kebiasaan berpikir strategis.',
+      '[PLACEHOLDER - TASK-017] Rationale for selecting Delegation as next best action (score {score})',
   },
-  people_development: {
+  feedback: {
     action:
-      'Jadwalkan sesi 1-on-1 mingguan dengan 3 direct report untuk mendiskusikan growth plan mereka. Target: dalam 4 minggu pertama.',
+      '[PLACEHOLDER - TASK-017] Recommended action for Feedback at score {score}',
     rationale:
-      'People Development adalah dimensi terendah ({score}). Membangun kebiasaan coaching rutin adalah langkah konkret pertama yang bisa langsung dijalankan.',
-  },
-  execution: {
-    action:
-      'Gunakan metode \'Eat the Frog\': setiap pagi, kerjakan task paling penting dan paling sulit sebelum jam 10 pagi selama 2 minggu.',
-    rationale:
-      'Execution adalah dimensi terendah ({score}). Membangun momentum pagi hari secara konsisten memperkuat muscle eksekusi.',
+      '[PLACEHOLDER - TASK-017] Rationale for selecting Feedback as next best action (score {score})',
   },
 };

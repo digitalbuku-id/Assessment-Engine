@@ -1,35 +1,34 @@
 /**
  * Leadership Domain Pack — Reason Template Catalog
  *
- * Semua template MIGRATED dari config/reasons.js (Sprint 1).
- * Placeholder {score} di-substitusi saat runtime oleh Core Engine.
- * JANGAN ubah wording tanpa revisi rubric.
+ * Aligned to Canonical Domain Model (ADR-003): 4 dimensi.
  *
- * @migrated-from engines/recommendation/config/reasons.js[leadership]
+ * ⚠️  SEMUA template saat ini adalah PLACEHOLDER.
+ *     Wording final akan ditulis di TASK-017 oleh rubric designer.
+ *     Placeholder sengaja menggunakan marker eksplisit agar tidak
+ *     terlihat seperti konten sungguhan — dan gagal review.
+ *
+ * @placeholder-for  TASK-017 (Wording)
  */
 module.exports = {
   strengths: {
-    communication:
-      'Skor {score} menunjukkan kamu komunikator yang efektif — mampu menyampaikan ide dengan jelas dan didengarkan oleh tim.',
-    decisiveness:
-      'Skor {score} menunjukkan kamu mampu mengambil keputusan dengan cepat dan tepat, bahkan dalam situasi penuh tekanan.',
-    strategic_thinking:
-      'Skor {score} menunjukkan kamu mampu melihat gambaran besar dan menyusun rencana jangka panjang dengan baik. Ini adalah fondasi penting dalam peran leadership.',
-    people_development:
-      'Skor {score} menunjukkan kamu sudah membangun budaya mentorship dan pengembangan yang kuat dalam tim.',
-    execution:
-      'Skor {score} menunjukkan kamu mampu mengeksekusi rencana menjadi hasil nyata secara konsisten.',
+    motivation:
+      '[PLACEHOLDER - TASK-017] Motivation strength reason for score {score}',
+    decision_making:
+      '[PLACEHOLDER - TASK-017] Decision Making strength reason for score {score}',
+    delegation:
+      '[PLACEHOLDER - TASK-017] Delegation strength reason for score {score}',
+    feedback:
+      '[PLACEHOLDER - TASK-017] Feedback strength reason for score {score}',
   },
   weaknesses: {
-    communication:
-      'Skor {score} menunjukkan ada ruang untuk meningkatkan kejelasan komunikasi, terutama dalam menyampaikan visi ke tim.',
-    decisiveness:
-      'Skor {score} masih dalam zona menengah — ada ruang untuk meningkatkan kecepatan dan ketegasan dalam mengambil keputusan.',
-    strategic_thinking:
-      'Skor {score} menunjukkan perlunya meluangkan waktu lebih banyak untuk perencanaan strategis jangka panjang.',
-    people_development:
-      'Skor {score} berada di bawah threshold pengembangan tim. Ini bisa menjadi penghambat dalam membangun tim yang mandiri dan resilient.',
-    execution:
-      'Skor {score} menunjukkan gap antara perencanaan dan eksekusi. Fokus pada follow-through akan sangat membantu.',
+    motivation:
+      '[PLACEHOLDER - TASK-017] Motivation weakness reason for score {score}',
+    decision_making:
+      '[PLACEHOLDER - TASK-017] Decision Making weakness reason for score {score}',
+    delegation:
+      '[PLACEHOLDER - TASK-017] Delegation weakness reason for score {score}',
+    feedback:
+      '[PLACEHOLDER - TASK-017] Feedback weakness reason for score {score}',
   },
 };
