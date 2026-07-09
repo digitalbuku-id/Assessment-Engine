@@ -468,6 +468,34 @@ test('single-dimension scores \u2192 next_best_action is that dimension', () => 
 });
 
 // ─────────────────────────────────────────────────
+console.log('\n\u2550\u2550\u2550 Legacy Path (no packConfig) \u2550\u2550\u2550');
+
+test('legacy path (_resolveLegacy) still works with old 5-dimension data', () => {
+  // Construct engine WITHOUT packConfig — triggers _resolveLegacy('leadership')
+  // which reads from config/thresholds.js (still has 5 old dims)
+  const legacyEngine = new RecommendationEngine();
+  const result = legacyEngine.generate({
+    assessment_id: 'asmt_legacy',
+    user_id: 'u_legacy',
+    type: 'leadership',
+    scores: {
+      communication: 90,
+      decisiveness: 55,
+      strategic_thinking: 72,
+      people_development: 48,
+      execution: 85,
+    },
+  });
+
+  if (result.error) throw new Error(`legacy path should not error: ${result.error}`);
+  if (result.type !== 'leadership') throw new Error('type mismatch');
+  // Verify classification still works
+  if (!result.strengths.some(s => s.dimension === 'communication')) throw new Error('communication should be strength');
+  if (!result.weaknesses.some(w => w.dimension === 'people_development')) throw new Error('people_development should be weakness');
+  if (result.next_best_action === null) throw new Error('NBA should not be null');
+});
+
+// ─────────────────────────────────────────────────
 console.log('\n\u2550\u2550\u2550 Engine Version \u2550\u2550\u2550');
 
 test('engine.version === "1.0.0"', () => {
