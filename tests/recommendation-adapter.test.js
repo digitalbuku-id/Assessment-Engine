@@ -43,11 +43,10 @@ function makeValidatedData(overrides = {}) {
         participantId: 'P-TEST',
         name: 'Test User',
         competencyScores: [
-          { competencyId: 'comm', competencyName: 'Communication', score: 90 },
-          { competencyId: 'deci', competencyName: 'Decisiveness', score: 40 },
-          { competencyId: 'strat', competencyName: 'Strategic Thinking', score: 75 },
-          { competencyId: 'pdev', competencyName: 'People Development', score: 48 },
-          { competencyId: 'exec', competencyName: 'Execution', score: 70 },
+          { competencyId: 'mot', competencyName: 'Motivation', score: 90 },
+          { competencyId: 'dec', competencyName: 'Decision Making', score: 40 },
+          { competencyId: 'del', competencyName: 'Delegation', score: 75 },
+          { competencyId: 'fb', competencyName: 'Feedback', score: 48 },
         ],
       },
     ],
@@ -134,10 +133,10 @@ test('success: output includes strength for high scorer', () => {
   const result = generateRecommendations({}, makeValidatedData());
   const strengthStrings = result.filter(r => r.startsWith('Strength:'));
   if (strengthStrings.length === 0) {
-    throw new Error('should have at least one strength (communication=90 ≥ 80)');
+    throw new Error('should have at least one strength (motivation=90 ≥ 80)');
   }
-  if (!strengthStrings.some(s => s.includes('Communication'))) {
-    throw new Error('should include Communication as strength');
+  if (!strengthStrings.some(s => s.includes('Motivation'))) {
+    throw new Error('should include Motivation as strength');
   }
   if (!strengthStrings.some(s => s.includes('90'))) {
     throw new Error('strength reason should include score 90');
@@ -148,10 +147,10 @@ test('success: output includes growth area for low scorer', () => {
   const result = generateRecommendations({}, makeValidatedData());
   const weaknessStrings = result.filter(r => r.startsWith('Growth area:'));
   if (weaknessStrings.length === 0) {
-    throw new Error('should have at least one growth area (decisiveness=40 ≤ 55)');
+    throw new Error('should have at least one growth area (decision_making=40 ≤ 55)');
   }
-  if (!weaknessStrings.some(w => w.includes('Decisiveness'))) {
-    throw new Error('should include Decisiveness as growth area');
+  if (!weaknessStrings.some(w => w.includes('Decision Making'))) {
+    throw new Error('should include Decision Making as growth area');
   }
 });
 
@@ -161,19 +160,18 @@ test('success: output includes next_best_action', () => {
   if (nbaStrings.length === 0) {
     throw new Error('should have next_best_action');
   }
-  // Decisiveness=40 is the lowest score
-  if (!nbaStrings[0].includes('Decisiveness')) {
-    throw new Error('next_best_action should target Decisiveness (lowest score)');
+  // decision_making=40 is the lowest score
+  if (!nbaStrings[0].includes('Decision Making')) {
+    throw new Error('next_best_action should target Decision Making (lowest score)');
   }
 });
 
 test('success: neutral scores (56-79) do NOT appear in output', () => {
-  // communication=90 (strength), decisiveness=40 (weakness),
-  // strategic_thinking=75 (neutral), people_development=48 (weakness),
-  // execution=70 (neutral)
+  // motivation=90 (strength), decision_making=40 (weakness),
+  // delegation=75 (neutral), feedback=48 (weakness)
   const result = generateRecommendations({}, makeValidatedData());
   const allText = result.join(' ');
-  if (allText.includes('Strategic Thinking') || allText.includes('Execution')) {
+  if (allText.includes('Delegation')) {
     throw new Error('neutral dimensions should not appear in output');
   }
 });

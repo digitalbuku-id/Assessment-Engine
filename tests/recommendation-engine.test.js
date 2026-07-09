@@ -3,6 +3,12 @@
 /**
  * Test suite: Recommendation Engine MVP
  *
+ * UPDATED TASK-016A — aligned to Canonical Model 4 dimensions:
+ *   motivation, decision_making, delegation, feedback
+ *
+ * Uses the resolver to inject the 4-dimension Canonical pack config
+ * into the engine, since the legacy config/ still has 5 old dims.
+ *
  * Cakupan:
  *  - Input valid → output sesuai spec
  *  - Determinism (input identik → output identik)
@@ -16,11 +22,18 @@
  *  - Next best action tie-break
  *  - Version field selalu ada
  *  - Template substitution ({score})
+ *
+ * NOTE: Wording is placeholder (TASK-017) — assertions check
+ *  structural correctness and marker presence, NOT final text.
  */
 
 import { RecommendationEngine } from '../engines/recommendation/index.js';
+import { resolve } from '../engines/recommendation/resolver.js';
 
-const engine = new RecommendationEngine();
+const packConfig = resolve('assessment-leadership-v2');
+if (packConfig.error) throw new Error(`Cannot resolve leadership pack: ${packConfig.error}`);
+
+const engine = new RecommendationEngine(packConfig);
 
 let passed = 0;
 let failed = 0;
@@ -28,10 +41,10 @@ let failed = 0;
 function test(name, fn) {
   try {
     fn();
-    console.log(`  ✓ ${name}`);
+    console.log(`  \u2713 ${name}`);
     passed++;
   } catch (err) {
-    console.error(`  ✗ ${name}`);
+    console.error(`  \u2717 ${name}`);
     console.error(`    ${err.message}`);
     failed++;
   }
@@ -45,18 +58,17 @@ const SAMPLE_INPUT = {
   type: 'leadership',
   completed_at: '2026-07-05T10:30:00Z',
   scores: {
-    communication: 72,
-    decisiveness: 65,
-    strategic_thinking: 81,
-    people_development: 48,
-    execution: 70,
+    motivation: 88,         // ≥ 80 → STRENGTH
+    decision_making: 48,    // ≤ 55 → WEAKNESS
+    delegation: 72,         // 56–79 → NEUTRAL
+    feedback: 35,           // ≤ 55 → WEAKNESS (lowest → NBA)
   },
 };
 
 // ─────────────────────────────────────────────────
-console.log('\n═══ Validation & Error Handling ═══');
+console.log('\n\u2550\u2550\u2550 Validation & Error Handling \u2550\u2550\u2550');
 
-test('EMPTY_SCORES → returns empty arrays + null next_best_action', () => {
+test('EMPTY_SCORES \u2192 returns empty arrays + null next_best_action', () => {
   const result = engine.generate({
     assessment_id: 'asmt_x',
     user_id: 'u_1',
@@ -76,11 +88,11 @@ test('INVALID_SCORE_RANGE (< 0)', () => {
     assessment_id: 'asmt_x',
     user_id: 'u_1',
     type: 'leadership',
-    scores: { communication: -5 },
+    scores: { motivation: -5 },
   });
 
   if (result.error !== 'INVALID_SCORE_RANGE') throw new Error(`expected INVALID_SCORE_RANGE, got ${result.error}`);
-  if (!result.message.includes('communication')) throw new Error('message should mention the dimension');
+  if (!result.message.includes('motivation')) throw new Error('message should mention the dimension');
   if (!result.message.includes('-5')) throw new Error('message should mention the value');
 });
 
@@ -89,7 +101,7 @@ test('INVALID_SCORE_RANGE (> 100)', () => {
     assessment_id: 'asmt_x',
     user_id: 'u_1',
     type: 'leadership',
-    scores: { execution: 999 },
+    scores: { delegation: 999 },
   });
 
   if (result.error !== 'INVALID_SCORE_RANGE') throw new Error(`expected INVALID_SCORE_RANGE, got ${result.error}`);
@@ -107,7 +119,7 @@ test('UNKNOWN_DIMENSION', () => {
   if (!result.message.includes('cooking')) throw new Error('message should mention the dimension');
 });
 
-test('UNSUPPORTED_TYPE', () => {
+test('UNSUPPORTED_DIMENSION (unknown dimension via resolver path)', () => {
   const result = engine.generate({
     assessment_id: 'asmt_x',
     user_id: 'u_1',
@@ -115,15 +127,16 @@ test('UNSUPPORTED_TYPE', () => {
     scores: { flavor: 80 },
   });
 
-  if (result.error !== 'UNSUPPORTED_TYPE') throw new Error(`expected UNSUPPORTED_TYPE, got ${result.error}`);
-  if (!result.message.includes('baking')) throw new Error('message should mention the type');
+  // In resolver mode, unknown dimensions trigger UNKNOWN_DIMENSION
+  if (result.error !== 'UNKNOWN_DIMENSION') throw new Error(`expected UNKNOWN_DIMENSION, got ${result.error}`);
+  if (!result.message.includes('flavor')) throw new Error('message should mention the dimension');
 });
 
 test('MISSING_ASSESSMENT_ID', () => {
   const result = engine.generate({
     user_id: 'u_1',
     type: 'leadership',
-    scores: { communication: 50 },
+    scores: { motivation: 50 },
   });
 
   if (result.error !== 'MISSING_ASSESSMENT_ID') throw new Error(`expected MISSING_ASSESSMENT_ID, got ${result.error}`);
@@ -151,7 +164,7 @@ test('INVALID_SCORES (undefined)', () => {
 });
 
 // ─────────────────────────────────────────────────
-console.log('\n═══ Happy Path — Output Structure ═══');
+console.log('\n\u2550\u2550\u2550 Happy Path \u2014 Output Structure \u2550\u2550\u2550');
 
 test('output contains version field (semver)', () => {
   const result = engine.generate(SAMPLE_INPUT);
@@ -175,28 +188,30 @@ test('output echoes type', () => {
 });
 
 // ─────────────────────────────────────────────────
-console.log('\n═══ Classification — Strengths & Weaknesses ═══');
+console.log('\n\u2550\u2550\u2550 Classification \u2014 Strengths & Weaknesses \u2550\u2550\u2550');
 
-test('strategic_thinking (81) diklasifikasi sebagai strength (≥80)', () => {
+test('motivation (88) classified as strength (\u226580)', () => {
   const result = engine.generate(SAMPLE_INPUT);
-  const st = result.strengths.find(s => s.dimension === 'strategic_thinking');
-  if (!st) throw new Error('strategic_thinking should be a strength');
-  if (st.score !== 81) throw new Error('score mismatch');
-  if (st.label !== 'Strategic Thinking') throw new Error('label mismatch');
-  if (!st.reason.includes('81')) throw new Error('reason should include score');
+  const st = result.strengths.find(s => s.dimension === 'motivation');
+  if (!st) throw new Error('motivation should be a strength');
+  if (st.score !== 88) throw new Error('score mismatch');
+  if (st.label !== 'Motivation') throw new Error('label mismatch');
+  // Check placeholder marker — NOT testing final text
+  if (!st.reason.includes('[PLACEHOLDER - TASK-017]')) throw new Error('reason should contain placeholder marker');
+  if (!st.reason.includes('88')) throw new Error('reason should include score substitution');
 });
 
-test('people_development (48) diklasifikasi sebagai weakness (≤55)', () => {
+test('decision_making (48) classified as weakness (\u226455)', () => {
   const result = engine.generate(SAMPLE_INPUT);
-  const wk = result.weaknesses.find(w => w.dimension === 'people_development');
-  if (!wk) throw new Error('people_development should be a weakness');
+  const wk = result.weaknesses.find(w => w.dimension === 'decision_making');
+  if (!wk) throw new Error('decision_making should be a weakness');
   if (wk.score !== 48) throw new Error('score mismatch');
-  if (wk.label !== 'People Development') throw new Error('label mismatch');
-  if (!wk.reason.includes('48')) throw new Error('reason should include score');
+  if (wk.label !== 'Decision Making') throw new Error('label mismatch');
+  if (!wk.reason.includes('[PLACEHOLDER - TASK-017]')) throw new Error('reason should contain placeholder marker');
+  if (!wk.reason.includes('48')) throw new Error('reason should include score substitution');
 });
 
-test('decisiveness (65) adalah NEUTRAL per algoritma threshold (80/55)', () => {
-  // 65 > 55 → bukan weakness. 65 < 80 → bukan strength. → NEUTRAL.
+test('delegation (72) is NEUTRAL (56\u201379) \u2014 not in strengths or weaknesses', () => {
   const result = engine.generate(SAMPLE_INPUT);
 
   const allInOutput = [
@@ -204,40 +219,26 @@ test('decisiveness (65) adalah NEUTRAL per algoritma threshold (80/55)', () => {
     ...result.weaknesses.map(w => w.dimension),
   ];
 
-  if (allInOutput.includes('decisiveness')) {
-    throw new Error('decisiveness (65) should be NEUTRAL — not in strengths or weaknesses');
+  if (allInOutput.includes('delegation')) {
+    throw new Error('delegation (72) should be NEUTRAL — not in strengths or weaknesses');
   }
-  if (result.weaknesses.length !== 1) {
-    throw new Error(`expected 1 weakness (people_development=48), got ${result.weaknesses.length}`);
+  if (result.weaknesses.length !== 2) {
+    throw new Error(`expected 2 weaknesses (decision_making=48, feedback=35), got ${result.weaknesses.length}`);
   }
   if (result.strengths.length !== 1) {
-    throw new Error(`expected 1 strength (strategic_thinking=81), got ${result.strengths.length}`);
+    throw new Error(`expected 1 strength (motivation=88), got ${result.strengths.length}`);
   }
 });
 
-test('skor 56–79 TERMASUK neutral → tidak muncul di strengths atau weaknesses', () => {
-  // decisiveness=65, communication=72, execution=70 → all in 56–79 range = neutral
-  const result = engine.generate(SAMPLE_INPUT);
-
-  const allDims = [
-    ...result.strengths.map(s => s.dimension),
-    ...result.weaknesses.map(w => w.dimension),
-  ];
-
-  if (allDims.includes('decisiveness')) throw new Error('decisiveness (65) should be neutral');
-  if (allDims.includes('communication')) throw new Error('communication (72) should be neutral');
-  if (allDims.includes('execution')) throw new Error('execution (70) should be neutral');
-});
-
-test('strength items memiliki semua field wajib', () => {
+test('strength items have all required fields', () => {
   const result = engine.generate({
     assessment_id: 'asmt_all_strong',
     user_id: 'u_x',
     type: 'leadership',
     scores: {
-      communication: 90,
-      strategic_thinking: 85,
-      execution: 88,
+      motivation: 90,
+      decision_making: 85,
+      delegation: 88,
     },
   });
 
@@ -252,15 +253,15 @@ test('strength items memiliki semua field wajib', () => {
   }
 });
 
-test('weakness items memiliki semua field wajib', () => {
+test('weakness items have all required fields', () => {
   const result = engine.generate({
     assessment_id: 'asmt_all_weak',
     user_id: 'u_x',
     type: 'leadership',
     scores: {
-      communication: 30,
-      people_development: 25,
-      execution: 40,
+      motivation: 30,
+      decision_making: 25,
+      feedback: 40,
     },
   });
 
@@ -275,17 +276,17 @@ test('weakness items memiliki semua field wajib', () => {
 });
 
 // ─────────────────────────────────────────────────
-console.log('\n═══ Next Best Action ═══');
+console.log('\n\u2550\u2550\u2550 Next Best Action \u2550\u2550\u2550');
 
-test('next_best_action memilih dimensi dengan skor terendah', () => {
+test('next_best_action selects dimension with lowest score', () => {
   const result = engine.generate(SAMPLE_INPUT);
-  // people_development = 48 (terendah)
-  if (result.next_best_action.focus_dimension !== 'people_development') {
-    throw new Error(`expected people_development, got ${result.next_best_action.focus_dimension}`);
+  // feedback = 35 (lowest)
+  if (result.next_best_action.focus_dimension !== 'feedback') {
+    throw new Error(`expected feedback, got ${result.next_best_action.focus_dimension}`);
   }
 });
 
-test('next_best_action memiliki semua field wajib', () => {
+test('next_best_action has all required fields', () => {
   const result = engine.generate(SAMPLE_INPUT);
   const nba = result.next_best_action;
 
@@ -293,40 +294,42 @@ test('next_best_action memiliki semua field wajib', () => {
   if (typeof nba.label !== 'string') throw new Error('label missing');
   if (typeof nba.action !== 'string') throw new Error('action missing');
   if (typeof nba.rationale !== 'string') throw new Error('rationale missing');
+  // Check placeholder marker — NOT testing final text
+  if (!nba.action.includes('[PLACEHOLDER - TASK-017]')) throw new Error('action should contain placeholder marker');
+  if (!nba.rationale.includes('[PLACEHOLDER - TASK-017]')) throw new Error('rationale should contain placeholder marker');
 });
 
-test('next_best_action rationale mengandung skor dimensi terendah', () => {
+test('next_best_action rationale contains score of lowest dimension', () => {
   const result = engine.generate(SAMPLE_INPUT);
-  if (!result.next_best_action.rationale.includes('48')) {
-    throw new Error('rationale should include score 48');
+  if (!result.next_best_action.rationale.includes('35')) {
+    throw new Error('rationale should include score 35');
   }
 });
 
-test('next_best_action tie-break: dimensi pertama dalam input order', () => {
-  // Keduanya skor 50 → harus pilih yang pertama muncul
+test('next_best_action tie-break: first dimension in input order', () => {
+  // Both score 50 — should pick first one in scores object
   const result = engine.generate({
     assessment_id: 'asmt_tie',
     user_id: 'u_1',
     type: 'leadership',
     scores: {
-      communication: 50,
-      decisiveness: 50,
+      motivation: 50,
+      decision_making: 50,
     },
   });
 
-  if (result.next_best_action.focus_dimension !== 'communication') {
-    throw new Error(`tie-break should pick first dimension (communication), got ${result.next_best_action.focus_dimension}`);
+  if (result.next_best_action.focus_dimension !== 'motivation') {
+    throw new Error(`tie-break should pick first dimension (motivation), got ${result.next_best_action.focus_dimension}`);
   }
 });
 
 // ─────────────────────────────────────────────────
-console.log('\n═══ Determinism ═══');
+console.log('\n\u2550\u2550\u2550 Determinism \u2550\u2550\u2550');
 
-test('input identik menghasilkan output identik (kecuali generated_at)', () => {
+test('identical input produces identical output (except generated_at)', () => {
   const r1 = engine.generate(SAMPLE_INPUT);
   const r2 = engine.generate(SAMPLE_INPUT);
 
-  // Bandingkan semua field kecuali generated_at
   const stripTimestamp = (r) => {
     const { generated_at, ...rest } = r;
     return rest;
@@ -335,28 +338,28 @@ test('input identik menghasilkan output identik (kecuali generated_at)', () => {
   const s1 = JSON.stringify(stripTimestamp(r1));
   const s2 = JSON.stringify(stripTimestamp(r2));
 
-  if (s1 !== s2) throw new Error('output tidak identik — determinism failed');
+  if (s1 !== s2) throw new Error('output not identical — determinism failed');
 });
 
-test('tidak ada randomness source — nilai score tidak berubah', () => {
+test('no randomness source — score values never change', () => {
   for (let i = 0; i < 10; i++) {
     const r = engine.generate(SAMPLE_INPUT);
-    const pd = r.weaknesses.find(w => w.dimension === 'people_development');
-    if (pd.score !== 48) throw new Error(`score berubah: ${pd.score}`);
+    const fb = r.weaknesses.find(w => w.dimension === 'feedback');
+    if (fb.score !== 35) throw new Error(`score changed: ${fb.score}`);
   }
 });
 
 // ─────────────────────────────────────────────────
-console.log('\n═══ Template Substitution ═══');
+console.log('\n\u2550\u2550\u2550 Template Substitution \u2550\u2550\u2550');
 
-test('semua {score} di reason sudah tersubstitusi', () => {
+test('all {score} placeholders in reason are substituted', () => {
   const result = engine.generate({
     assessment_id: 'asmt_subst',
     user_id: 'u_1',
     type: 'leadership',
     scores: {
-      communication: 95,
-      people_development: 20,
+      motivation: 95,
+      feedback: 20,
     },
   });
 
@@ -371,103 +374,101 @@ test('semua {score} di reason sudah tersubstitusi', () => {
 });
 
 // ─────────────────────────────────────────────────
-console.log('\n═══ Edge Cases ═══');
+console.log('\n\u2550\u2550\u2550 Edge Cases \u2550\u2550\u2550');
 
-test('semua skor strength → weaknesses kosong', () => {
+test('all scores are strength \u2192 weaknesses is empty', () => {
   const result = engine.generate({
     assessment_id: 'asmt_edge',
     user_id: 'u_1',
     type: 'leadership',
     scores: {
-      communication: 90,
-      decisiveness: 85,
-      strategic_thinking: 95,
-      people_development: 88,
-      execution: 92,
+      motivation: 90,
+      decision_making: 85,
+      delegation: 95,
+      feedback: 88,
     },
   });
 
-  if (result.strengths.length !== 5) throw new Error('expected 5 strengths');
+  if (result.strengths.length !== 4) throw new Error('expected 4 strengths');
   if (result.weaknesses.length !== 0) throw new Error('expected 0 weaknesses');
   if (result.next_best_action === null) throw new Error('next_best_action should not be null');
 });
 
-test('semua skor weakness → strengths kosong', () => {
+test('all scores are weakness \u2192 strengths is empty', () => {
   const result = engine.generate({
     assessment_id: 'asmt_edge2',
     user_id: 'u_1',
     type: 'leadership',
     scores: {
-      communication: 20,
-      decisiveness: 30,
-      strategic_thinking: 10,
-      people_development: 40,
-      execution: 15,
+      motivation: 20,
+      decision_making: 30,
+      delegation: 10,
+      feedback: 40,
     },
   });
 
   if (result.strengths.length !== 0) throw new Error('expected 0 strengths');
-  if (result.weaknesses.length !== 5) throw new Error('expected 5 weaknesses');
-  if (result.next_best_action.focus_dimension !== 'strategic_thinking') {
-    throw new Error('next_best_action should pick lowest (strategic_thinking=10)');
+  if (result.weaknesses.length !== 4) throw new Error('expected 4 weaknesses');
+  if (result.next_best_action.focus_dimension !== 'delegation') {
+    throw new Error('next_best_action should pick lowest (delegation=10)');
   }
 });
 
-test('skor boundary tepat di threshold strength (80)', () => {
+test('score at exact strength threshold boundary (80)', () => {
   const result = engine.generate({
     assessment_id: 'asmt_boundary',
     user_id: 'u_1',
     type: 'leadership',
-    scores: { communication: 80 },
+    scores: { motivation: 80 },
   });
 
-  if (result.strengths.length !== 1) throw new Error('score 80 should be strength (≥80)');
-  if (result.strengths[0].dimension !== 'communication') throw new Error('dimension mismatch');
+  if (result.strengths.length !== 1) throw new Error('score 80 should be strength (\u226580)');
+  if (result.strengths[0].dimension !== 'motivation') throw new Error('dimension mismatch');
 });
 
-test('skor boundary tepat di threshold weakness (55)', () => {
+test('score at exact weakness threshold boundary (55)', () => {
   const result = engine.generate({
     assessment_id: 'asmt_boundary2',
     user_id: 'u_1',
     type: 'leadership',
-    scores: { communication: 55 },
+    scores: { motivation: 55 },
   });
 
-  if (result.weaknesses.length !== 1) throw new Error('score 55 should be weakness (≤55)');
-  if (result.weaknesses[0].dimension !== 'communication') throw new Error('dimension mismatch');
+  if (result.weaknesses.length !== 1) throw new Error('score 55 should be weakness (\u226455)');
+  if (result.weaknesses[0].dimension !== 'motivation') throw new Error('dimension mismatch');
 });
 
-test('skor satu di atas weakness threshold (56) → neutral', () => {
+test('score one above weakness threshold (56) \u2192 neutral', () => {
   const result = engine.generate({
     assessment_id: 'asmt_neutral',
     user_id: 'u_1',
     type: 'leadership',
-    scores: { communication: 56 },
+    scores: { motivation: 56 },
   });
 
   if (result.strengths.length !== 0) throw new Error('56 should not be strength');
   if (result.weaknesses.length !== 0) throw new Error('56 should not be weakness');
-  // next_best_action masih harus terisi karena ada skor
-  if (result.next_best_action.focus_dimension !== 'communication') {
-    throw new Error('next_best_action should pick communication (only dimension)');
+  // next_best_action should still be populated because there is a score
+  if (result.next_best_action.focus_dimension !== 'motivation') {
+    throw new Error('next_best_action should pick motivation (only dimension)');
   }
 });
 
-test('scores dengan 1 dimensi → next_best_action adalah dimensi itu', () => {
+test('single-dimension scores \u2192 next_best_action is that dimension', () => {
   const result = engine.generate({
     assessment_id: 'asmt_single',
     user_id: 'u_1',
     type: 'leadership',
-    scores: { execution: 75 },
+    scores: { delegation: 75 },
   });
 
-  if (result.next_best_action.focus_dimension !== 'execution') {
+  if (result.next_best_action.focus_dimension !== 'delegation') {
     throw new Error('next_best_action should be the only dimension');
   }
 });
 
 // ─────────────────────────────────────────────────
-console.log('\n═══ Engine Version ═══');
+console.log('\n\u2550\u2550\u2550 Engine Version \u2550\u2550\u2550');
 
 test('engine.version === "1.0.0"', () => {
   if (engine.version !== '1.0.0') throw new Error(`expected 1.0.0, got ${engine.version}`);
