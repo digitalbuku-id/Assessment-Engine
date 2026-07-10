@@ -26,13 +26,13 @@ High Interpretation: Respons Anda mengindikasikan keyakinan bahwa Anda mampu men
 
 Low Interpretation: Hasil pada dimensi ini menunjukkan adanya ruang pengembangan dalam kemampuan memotivasi tim untuk tetap berfokus pada pencapaian target.
 
-Do Not Infer: malas; tidak memiliki motivasi pribadi; tidak peduli terhadap tim; tidak loyal terhadap organisasi; tidak mampu menjadi pemimpin; memiliki engagement rendah; memiliki integritas rendah; memiliki performa kerja buruk; akan gagal memimpin.
+Do Not Infer: motivasi pribadi individu tersebut; kepemimpinan secara keseluruhan; loyalitas atau komitmen terhadap organisasi; integritas atau moral; kecerdasan emosional atau empati; kemampuan memotivasi diri sendiri; kepemimpinan transformasional atau visioner; kinerja tim secara aktual; tingkat energi atau stamina individu; kepuasan kerja atau kebahagiaan.
 
-Recommendation Intent (High): Membantu peserta mempertahankan praktik memotivasi tim secara konsisten dan membagikan pendekatan yang efektif kepada anggota tim.
+Recommendation Intent (High): Membantu peserta mempertahankan kemampuan memotivasi tim sambil tetap membuka ruang refleksi untuk menjaga semangat tim dalam jangka panjang.
 
-Recommendation Intent (Low): Membantu peserta mengembangkan cara memberikan dorongan, arah, dan penguatan kepada tim dalam konteks pencapaian target.
+Recommendation Intent (Low): Membantu peserta membangun strategi dan kepercayaan diri untuk memotivasi tim secara lebih konsisten.
 
-Confidence Note: Interpretasi pada dimensi ini berasal dari satu butir pertanyaan self-assessment. Hasil dimaksudkan sebagai gambaran awal terhadap area perilaku yang diukur dan tidak boleh digunakan sebagai dasar tunggal untuk menyimpulkan kompetensi kepemimpinan secara menyeluruh.
+Confidence Note: Interpretasi pada dimensi ini berasal dari satu indikator self-assessment dan sebaiknya dibaca bersama dimensi lain serta konteks penggunaan assessment.
 
 ---
 
