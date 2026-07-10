@@ -25,6 +25,7 @@ module.exports = {
   description: '4-dimensi leadership assessment (Canonical Model ADR-003)',
   rubric_version: '2026-Q3',
   locale: 'id',
+  maxScale: 5,                     // assessment scoring scale (1-5)
 
   // ── DISPLAY ───────────────────────────────────────────
   labels: {

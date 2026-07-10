@@ -196,8 +196,8 @@ test('motivation (88) classified as strength (\u226580)', () => {
   if (!st) throw new Error('motivation should be a strength');
   if (st.score !== 88) throw new Error('score mismatch');
   if (st.label !== 'Motivation') throw new Error('label mismatch');
-  // Check placeholder marker — NOT testing final text
-  if (!st.reason.includes('[PLACEHOLDER - TASK-017]')) throw new Error('reason should contain placeholder marker');
+  // Reason should be a non-empty string with score substitution
+  if (!st.reason || st.reason.length < 10) throw new Error('reason should be a non-trivial string');
   if (!st.reason.includes('88')) throw new Error('reason should include score substitution');
 });
 
@@ -207,7 +207,7 @@ test('decision_making (48) classified as weakness (\u226455)', () => {
   if (!wk) throw new Error('decision_making should be a weakness');
   if (wk.score !== 48) throw new Error('score mismatch');
   if (wk.label !== 'Decision Making') throw new Error('label mismatch');
-  if (!wk.reason.includes('[PLACEHOLDER - TASK-017]')) throw new Error('reason should contain placeholder marker');
+  if (!wk.reason || wk.reason.length < 10) throw new Error('reason should be a non-trivial string');
   if (!wk.reason.includes('48')) throw new Error('reason should include score substitution');
 });
 
@@ -294,9 +294,9 @@ test('next_best_action has all required fields', () => {
   if (typeof nba.label !== 'string') throw new Error('label missing');
   if (typeof nba.action !== 'string') throw new Error('action missing');
   if (typeof nba.rationale !== 'string') throw new Error('rationale missing');
-  // Check placeholder marker — NOT testing final text
-  if (!nba.action.includes('[PLACEHOLDER - TASK-017]')) throw new Error('action should contain placeholder marker');
-  if (!nba.rationale.includes('[PLACEHOLDER - TASK-017]')) throw new Error('rationale should contain placeholder marker');
+  // NBA action and rationale should be non-trivial strings
+  if (!nba.action || nba.action.length < 10) throw new Error('action should be a non-trivial string');
+  if (!nba.rationale || nba.rationale.length < 10) throw new Error('rationale should be a non-trivial string');
 });
 
 test('next_best_action rationale contains score of lowest dimension', () => {

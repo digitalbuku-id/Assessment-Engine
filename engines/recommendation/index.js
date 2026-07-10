@@ -18,6 +18,7 @@
 const _legacyThresholds = require('./config/thresholds');
 const _legacyReasons = require('./config/reasons');
 const _legacyActions = require('./config/actions');
+const { normalizeScores } = require('./normalization');
 
 const ENGINE_VERSION = '1.0.0';
 
@@ -52,6 +53,19 @@ class RecommendationEngine {
 
     // If config resolved to an error, return it
     if (config && config.error) return config;
+
+    // Normalize scores if pack has a non-100 maxScale (e.g., 1-5 scale → 0-100).
+    // Auto-detection: only normalize if all scores ≤ maxScale (raw scale).
+    // If scores already exceed maxScale, they are already 0-100 — skip normalization.
+    if (config && config.maxScale && config.maxScale !== 100) {
+      if (input.scores && typeof input.scores === 'object' && Object.keys(input.scores).length > 0) {
+        const allRaw = Object.values(input.scores).every(s => typeof s === 'number' && s > 0 && s <= config.maxScale);
+        if (allRaw) {
+          const scoringConfig = { maxScale: config.maxScale, minScale: config.minScale || 1 };
+          input = { ...input, scores: normalizeScores(input.scores, scoringConfig) };
+        }
+      }
+    }
 
     // Step 1: Validate
     const validationError = this._validate(input, config);
