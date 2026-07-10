@@ -43,8 +43,6 @@ ke Canonical Domain Model (4 dimensi) yang diputuskan di ADR-003.
 ## Known Issues
 - Snapshot lama (6 file di mvp/snapshots/) dibuat dengan 5 dimensi —
   didokumentasikan sebagai deprecated
-- Encoding issue di beberapa file (â€", â†') — hanya muncul di console
-  PowerShell, tidak di GitHub
 
 ## Next Steps
 - Sprint 6: Domain pack baru (DISC, CPNS, Sales, dll)
@@ -52,7 +50,7 @@ ke Canonical Domain Model (4 dimensi) yang diputuskan di ADR-003.
 - Sprint 8: Production deployment
 
 ## Credits
-- Product Owner: [Your Name]
+- Product Owner: Product Owner
 - Chief Architect: Hera
 - Software Engineer: Ares
 - Auditor: Zeus
