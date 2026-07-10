@@ -6,6 +6,8 @@
 | Source | RD-001 (approved 2026-07-09) |
 | Purpose | Audit trail: setiap kata di reasons.js dan actions.js dapat ditelusuri ke RD-001 |
 | Dimensi | 4 (Canonical Model ADR-003) |
+| RD Version | RD-001 v1.0 |
+| TM Version | TM-001 v1.0 |
 
 ---
 
@@ -15,7 +17,7 @@
 |---|---------------|----------------|-----------------|------|--------|
 | 1 | High Interpretation | Motivation | `reasons.strengths.motivation` | `reasons.js` | Skor {score} mengindikasikan keyakinan bahwa Anda mampu mendorong semangat tim dan menjaga fokus pada pencapaian target. |
 | 2 | Low Interpretation | Motivation | `reasons.weaknesses.motivation` | `reasons.js` | Skor {score} menunjukkan adanya ruang pengembangan dalam kemampuan memotivasi tim untuk tetap berfokus pada pencapaian target. |
-| 3 | Recommendation Intent (Low) | Motivation | `actions.motivation` | `actions.js` | **action:** Membantu peserta mengembangkan cara memberikan dorongan, arah, dan penguatan kepada tim dalam konteks pencapaian target. **rationale:** Motivation adalah dimensi dengan skor terendah ({score}). |
+| 3 | Recommendation Intent (Low) | Motivation | `actions.motivation` | `actions.js` | **action:** Membantu peserta mempertahankan kemampuan memotivasi tim sambil tetap membuka ruang refleksi untuk menjaga semangat tim dalam jangka panjang. **rationale:** Motivation adalah dimensi dengan skor terendah ({score}). |
 | 4 | High Interpretation | Decision Making | `reasons.strengths.decision_making` | `reasons.js` | Skor {score} mengindikasikan keyakinan bahwa Anda mampu mengambil keputusan pada situasi yang menantang secara tepat waktu, termasuk ketika menghadapi tekanan atau ketidakpastian. |
 | 5 | Low Interpretation | Decision Making | `reasons.weaknesses.decision_making` | `reasons.js` | Skor {score} menunjukkan adanya ruang pengembangan dalam membangun keyakinan dan ketepatan waktu saat mengambil keputusan pada situasi yang menantang. |
 | 6 | Recommendation Intent (Low) | Decision Making | `actions.decision_making` | `actions.js` | **action:** Membantu peserta membangun kepercayaan diri dan kerangka berpikir untuk mempercepat pengambilan keputusan pada situasi yang menekan. **rationale:** Decision Making adalah dimensi dengan skor terendah ({score}). |
@@ -25,6 +27,22 @@
 | 10 | High Interpretation | Feedback | `reasons.strengths.feedback` | `reasons.js` | Skor {score} mengindikasikan keyakinan bahwa Anda mampu memberikan feedback yang konstruktif kepada anggota tim untuk mendukung perbaikan kinerja dan pengembangan kerja. |
 | 11 | Low Interpretation | Feedback | `reasons.weaknesses.feedback` | `reasons.js` | Skor {score} menunjukkan adanya ruang pengembangan dalam membangun keyakinan dan efektivitas saat memberikan feedback yang konstruktif kepada anggota tim. |
 | 12 | Recommendation Intent (Low) | Feedback | `actions.feedback` | `actions.js` | **action:** Membantu peserta membangun keyakinan dan kerangka praktis untuk menyampaikan feedback yang konstruktif secara lebih konsisten dalam mendukung perkembangan anggota tim. **rationale:** Feedback adalah dimensi dengan skor terendah ({score}). |
+
+---
+
+## Rule Zero
+
+TM-001 MAY ONLY perform:
+- placeholder substitution ({score})
+- grammatical adjustment (subject replacement)
+- mechanical transformation
+
+TM-001 MUST NOT:
+- introduce new meaning
+- introduce new inference
+- introduce new recommendation
+- strengthen or weaken certainty
+- expand construct scope
 
 ---
 
@@ -55,3 +73,14 @@
 - Seluruh konten selain substitusi `{score}` dan pembuka kalimat berasal verbatim dari RD-001
 - Confidence Note dari RD-001 TIDAK dimasukkan ke template — confidence note adalah metadata rubric, bukan bagian dari output rekomendasi
 - Do Not Infer dari RD-001 TIDAK dimasukkan ke template — ini adalah constraint rubric designer, bukan konten yang ditampilkan ke user
+
+---
+
+## Verification Checklist
+
+☑ Every sentence in TM-001 exists in RD-001
+☑ No additional interpretation introduced
+☑ Placeholder {score} substitution only
+☑ Mapping complete for all 4 dimensions
+☑ Product Owner wording preserved verbatim
+☑ Rule Zero compliance verified

@@ -15,7 +15,7 @@
 module.exports = {
   motivation: {
     action:
-      'Membantu peserta mengembangkan cara memberikan dorongan, arah, dan penguatan kepada tim dalam konteks pencapaian target.',
+      'Membantu peserta mempertahankan kemampuan memotivasi tim sambil tetap membuka ruang refleksi untuk menjaga semangat tim dalam jangka panjang.',
     rationale:
       'Motivation adalah dimensi dengan skor terendah ({score}).',
   },
