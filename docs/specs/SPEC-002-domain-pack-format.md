@@ -91,6 +91,12 @@ module.exports = {
   rubric_version: '2026-Q3',       // versi rubric yang digunakan
   locale: 'id',                    // bahasa default (default: 'id')
 
+  // ── STRATEGY (ADR-004) ─────────────────────────────────
+  pack_type: 'threshold',          // label kategori/deskriptif
+  scoring_strategy: 'threshold',   // strategi scoring (lihat daftar nilai valid)
+  graph_strategy: 'none',          // strategi visualisasi (lihat daftar nilai valid)
+  interpretation_strategy: 'threshold', // strategi interpretasi (lihat daftar nilai valid)
+
   // ── DISPLAY ───────────────────────────────────────────
   labels: {                        // display label per dimensi (wajib — dari Sprint 1)
     communication: 'Communication',
@@ -112,6 +118,10 @@ module.exports = {
 | `description` | string | no | Deskripsi singkat untuk dokumentasi |
 | `rubric_version` | string | no | Versi rubric yang digunakan (untuk traceability) |
 | `locale` | string | no | Kode bahasa ISO 639-1. Default: `'id'` |
+| `pack_type` | string | no | Label kategori/deskriptif (ADR-004). Default: `'threshold'`. Untuk dokumentasi dan filtering — bukan sumber kebenaran perilaku engine. |
+| `scoring_strategy` | string | no | Strategi scoring (ADR-004). Default: `'threshold'`. Nilai valid: `'threshold'`, `'disc_dual_profile'`. |
+| `graph_strategy` | string | no | Strategi visualisasi (ADR-004). Default: `'none'`. Nilai valid: `'none'`, `'disc_profile'`. |
+| `interpretation_strategy` | string | no | Strategi interpretasi (ADR-004). Default: `'threshold'`. Nilai valid: `'threshold'`, `'disc_profile'`. |
 
 ### 1b. `thresholds.js` — Threshold Map
 
@@ -206,6 +216,13 @@ FOR EACH pack:
     assert dimension ada di reasons.strengths
     assert dimension ada di reasons.weaknesses
     assert dimension ada di actions
+  // Strategy validation (ADR-004):
+  // - If scoring_strategy/graph_strategy/interpretation_strategy are missing
+  //   → use defaults: 'threshold' / 'none' / 'threshold' (backward compat)
+  // - If present but value is NOT in the supported list → throw INVALID_PACK_CONFIG
+  FOR EACH strategy IN [scoring_strategy, graph_strategy, interpretation_strategy]:
+    IF strategy is set AND value NOT IN supported_values:
+      throw INVALID_PACK_CONFIG: "Unsupported strategy '...' for field '...'"
 ```
 
 Jika validasi gagal → throw `INVALID_PACK_CONFIG` dengan detail field yang
@@ -331,6 +348,12 @@ function resolve(assessmentId) {
     communication: { action: '...', rationale: '...' },
     ...
   },
+
+  // dari metadata.js — strategy fields (ADR-004)
+  pack_type: 'threshold',
+  scoring_strategy: 'threshold',
+  graph_strategy: 'none',
+  interpretation_strategy: 'threshold',
 }
 ```
 
@@ -472,6 +495,7 @@ Spesifikasi ini **tidak mencakup**:
 | **Q2** | ~~Field `deprecated` di registry?~~ | — | **Resolved:** Tunda untuk MVP. |
 | **Q3** | ~~Validasi `registry.version` vs `metadata.version`?~~ | — | **Resolved:** Ya. Error `VERSION_MISMATCH` ditambahkan. |
 | **Q4** | Apakah resolver perlu caching strategy selain in-memory Map? | MVP: in-memory cukup. Jika jumlah pack >100, bisa jadi bottleneck startup. | **Resolved:** Tunda. In-memory Map cukup untuk skala sekarang. |
+| **Q5** | Apakah struktur file pack perlu bergantung pada scoring_strategy? | ADR-004 memperkenalkan pack_type, scoring_strategy, graph_strategy, dan interpretation_strategy, tetapi tidak mendefinisikan apakah setiap strategy memiliki kontrak file yang berbeda. SPEC-002 saat ini masih mendeskripsikan satu struktur file yang sama untuk seluruh pack. | Deferred — keputusan mengenai strategy-specific file contract akan dibahas pada ADR-005 (Strategy Registry and Resolution Framework) atau TASK-025C-B. |
 
 ---
 
@@ -479,6 +503,7 @@ Spesifikasi ini **tidak mencakup**:
 
 - [ADR-001](../adr/ADR-001-recommendation-framework.md) — Core Engine + Domain Pack architecture
 - [ADR-002](../adr/ADR-002-domain-pack-strategy.md) — Domain Pack Strategy, Assessment Registry, Pack Resolver
+- [ADR-004](../adr/ADR-004-strategy-based-pack-contract.md) — Strategy-Based Pack Contract
 - [SPEC-001](../../specs/SPEC-001.md) — DSL dan JSON output format (DESIGN-1: .js config decision)
 - `engines/recommendation/index.js` — Core Engine implementation (Sprint 1)
 - `engines/recommendation/config/thresholds.js` — Current threshold map (pre-migration)
