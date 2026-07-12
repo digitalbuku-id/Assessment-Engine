@@ -1,6 +1,6 @@
 # ADR-004: Strategy-Based Pack Contract
 
-Status: Proposed (menunggu PO approval)
+Status: Accepted (2026-07-12, PO approval)
 Date: 2026-07-12
 Related: [ADR-003](./ADR-003-canonical-assessment-domain-model.md), [SPEC-002](../specs/SPEC-002-domain-pack-format.md) — *(catatan: SPEC-002 berlokasi di docs/specs/, berbeda dari SPEC-001 yang di root specs/; belum diselaraskan, lihat item cleanup terpisah)*
 Konteks proyek: Assessment-Engine, menyusul temuan dari implementasi DISC Domain Pack
@@ -83,4 +83,5 @@ Desain registry sengaja ditunda ke ADR-005 agar ADR ini tetap berfokus pada kont
 
 ## Status
 
-Proposed — menunggu PO approval sebelum TASK-025C (update SPEC-002) dan TASK-025D (implementasi DISC) dijalankan.
+Accepted — TASK-025C (update SPEC-002) dan TASK-025D (implementasi
+DISC) dapat dilanjutkan.
