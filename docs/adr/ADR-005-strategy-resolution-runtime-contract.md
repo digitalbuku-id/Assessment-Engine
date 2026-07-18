@@ -66,12 +66,14 @@ didefinisikan sebagai satu sumber kebenaran (constant) di level engine
 (nama modul/lokasi file adalah keputusan implementasi, bukan keputusan
 ADR ini):
 
+```js
 // Ilustrasi bentuk — lokasi/nama file persis diputuskan saat implementasi
 const SUPPORTED_STRATEGIES = {
   scoring_strategy: ['threshold', 'disc_dual_profile'],
   graph_strategy: ['none', 'disc_profile'],
   interpretation_strategy: ['threshold', 'disc_profile'],
 };
+```
 
 Extensibility: menambah strategy baru = menambah entri ke daftar ini
 + menyediakan implementasi konkretnya (lihat D5) + PR review — bukan
