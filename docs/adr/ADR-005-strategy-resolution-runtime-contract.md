@@ -61,20 +61,20 @@ ADR ini memutuskan lima hal berikut.
 ### D1. Strategy Registry
 
 Daftar strategy yang didukung tetap seperti yang ditetapkan ADR-004,
-didefinisikan sebagai konstanta di level engine (bukan config yang bisa
-diubah tanpa deploy):
+didefinisikan sebagai satu sumber kebenaran (constant) di level engine
+— bukan config yang bisa diubah tanpa deploy. Ilustrasi bentuknya
+(nama modul/lokasi file adalah keputusan implementasi, bukan keputusan
+ADR ini):
 
-```js
-// engines/recommendation/strategy-registry.js (BARU)
+// Ilustrasi bentuk — lokasi/nama file persis diputuskan saat implementasi
 const SUPPORTED_STRATEGIES = {
   scoring_strategy: ['threshold', 'disc_dual_profile'],
   graph_strategy: ['none', 'disc_profile'],
   interpretation_strategy: ['threshold', 'disc_profile'],
 };
-```
 
-**Extensibility:** menambah strategy baru = menambah entri ke daftar ini
-+ menyediakan implementasi konkretnya (lihat D5) + PR review — **bukan**
+Extensibility: menambah strategy baru = menambah entri ke daftar ini
++ menyediakan implementasi konkretnya (lihat D5) + PR review — bukan
 perubahan yang butuh ADR baru untuk setiap strategy individual, selama
 polanya (registry → resolution → validation) tidak berubah. ADR baru
 hanya diperlukan kalau pola dasarnya sendiri berubah.
