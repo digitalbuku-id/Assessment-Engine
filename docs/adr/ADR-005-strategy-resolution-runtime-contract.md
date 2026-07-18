@@ -2,7 +2,7 @@
 
 | Metadata          | Value                                                |
 |--------------------|-------------------------------------------------------|
-| **Status**        | Proposed (menunggu PO approval)                       |
+| **Status**        | Accepted (2026-07-18, PO approval)                    |
 | **Date**          | 2026-07-15                                            |
 | **Author**        | Hera (Chief Architect)                                |
 | **Extends**       | [ADR-004](./ADR-004-strategy-based-pack-contract.md) — Strategy-Based Pack Contract |
@@ -252,8 +252,10 @@ secara evidence-based bukan pelanggaran prinsip yang sama.
 
 ## Status
 
-**Proposed** — menunggu PO approval sebelum TASK-025C-B (implementasi
-D2–D4 di `loader.js`/`resolver.js`) dijalankan.
+**Accepted** — TASK-025C-B (implementasi D2–D4 di `loader.js`/
+`resolver.js`) dapat dilanjutkan. Detail struktur file untuk
+`disc_dual_profile` (D5) tetap menunggu ADR/task terpisah sebelum
+TASK-025D dimulai.
 
 ## References
 
