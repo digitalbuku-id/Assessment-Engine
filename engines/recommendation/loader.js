@@ -16,6 +16,22 @@ const path = require('path');
 const _cache = new Map();
 
 // ──────────────────────────────────────────────
+//  Strategy Registry (ADR-005 D1–D3)
+// ──────────────────────────────────────────────
+
+const SUPPORTED_STRATEGIES = {
+  scoring_strategy: ['threshold', 'disc_dual_profile'],
+  graph_strategy: ['none', 'disc_profile'],
+  interpretation_strategy: ['threshold', 'disc_profile'],
+};
+
+const DEFAULT_STRATEGY = {
+  scoring_strategy: 'threshold',
+  graph_strategy: 'none',
+  interpretation_strategy: 'threshold',
+};
+
+// ──────────────────────────────────────────────
 //  Public API
 // ──────────────────────────────────────────────
 
@@ -47,6 +63,9 @@ function loadPack(packId) {
   // ── Merge into single config object ──
   const merged = {
     ...metadata,
+    scoring_strategy: metadata.scoring_strategy || DEFAULT_STRATEGY.scoring_strategy,
+    graph_strategy: metadata.graph_strategy || DEFAULT_STRATEGY.graph_strategy,
+    interpretation_strategy: metadata.interpretation_strategy || DEFAULT_STRATEGY.interpretation_strategy,
     strength_threshold: thresholds.strength_threshold,
     weakness_threshold: thresholds.weakness_threshold,
     reasons,
@@ -115,6 +134,14 @@ function _validateCompleteness(packId, metadata, thresholds, reasons, actions) {
     }
     if (!actions[dim]) {
       _fail(packId, `dimension '${dim}' missing in actions`);
+    }
+  }
+
+  // ── Strategy validation (ADR-005 D3) ──
+  for (const field of ['scoring_strategy', 'graph_strategy', 'interpretation_strategy']) {
+    const value = metadata[field] || DEFAULT_STRATEGY[field];
+    if (!SUPPORTED_STRATEGIES[field].includes(value)) {
+      _fail(packId, `${field} '${value}' is not a supported strategy`);
     }
   }
 }

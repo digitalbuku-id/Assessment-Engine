@@ -405,6 +405,74 @@ test('engine.generate with both packs in sequence — no state leak between call
 });
 
 // ─────────────────────────────────────────────────
+console.log('\n\u2550\u2550\u2550 Sprint 3C: Strategy Runtime Contract (ADR-005 D2-D4) \u2550\u2550\u2550');
+
+// ── Strategy defaults (ADR-005 D2) ──
+test('merged config has strategy defaults when metadata omits them', () => {
+  // Leadership pack metadata has no strategy fields → defaults apply
+  const config = loadPack('leadership');
+  if (config.scoring_strategy !== 'threshold') throw new Error(`expected scoring_strategy=threshold, got ${config.scoring_strategy}`);
+  if (config.graph_strategy !== 'none') throw new Error(`expected graph_strategy=none, got ${config.graph_strategy}`);
+  if (config.interpretation_strategy !== 'threshold') throw new Error(`expected interpretation_strategy=threshold, got ${config.interpretation_strategy}`);
+});
+
+test('resolve returns merged config with strategy fields', () => {
+  const config = resolve('assessment-leadership-v2');
+  if (config.error) throw new Error(`unexpected error: ${config.error}`);
+  // Strategy fields must be present (defaults from loader)
+  if (!('scoring_strategy' in config)) throw new Error('scoring_strategy missing from merged config');
+  if (!('graph_strategy' in config)) throw new Error('graph_strategy missing from merged config');
+  if (!('interpretation_strategy' in config)) throw new Error('interpretation_strategy missing from merged config');
+});
+
+// ── Strategy validation — INVALID_PACK_CONFIG (ADR-005 D3) ──
+test('INVALID_PACK_CONFIG: unsupported scoring_strategy', () => {
+  try {
+    _validateCompleteness('test', {
+      pack_id: 'test', dimensions: ['d1'], labels: { d1: 'D1' },
+      scoring_strategy: 'unsupported_strategy',
+    }, { strength_threshold: 80, weakness_threshold: 55 },
+    { strengths: { d1: 'x' }, weaknesses: { d1: 'y' } },
+    { d1: { action: 'a', rationale: 'b' } });
+    throw new Error('should have thrown');
+  } catch (err) {
+    if (err.code !== 'INVALID_PACK_CONFIG') throw new Error(`wrong error code: ${err.code}`);
+    if (!err.message.includes('scoring_strategy')) throw new Error('message should mention scoring_strategy');
+    if (!err.message.includes('unsupported_strategy')) throw new Error('message should mention the invalid value');
+  }
+});
+
+test('INVALID_PACK_CONFIG: unsupported graph_strategy', () => {
+  try {
+    _validateCompleteness('test', {
+      pack_id: 'test', dimensions: ['d1'], labels: { d1: 'D1' },
+      graph_strategy: 'unsupported_strategy',
+    }, { strength_threshold: 80, weakness_threshold: 55 },
+    { strengths: { d1: 'x' }, weaknesses: { d1: 'y' } },
+    { d1: { action: 'a', rationale: 'b' } });
+    throw new Error('should have thrown');
+  } catch (err) {
+    if (err.code !== 'INVALID_PACK_CONFIG') throw new Error(`wrong error code: ${err.code}`);
+    if (!err.message.includes('graph_strategy')) throw new Error('message should mention graph_strategy');
+  }
+});
+
+test('INVALID_PACK_CONFIG: unsupported interpretation_strategy', () => {
+  try {
+    _validateCompleteness('test', {
+      pack_id: 'test', dimensions: ['d1'], labels: { d1: 'D1' },
+      interpretation_strategy: 'unsupported_strategy',
+    }, { strength_threshold: 80, weakness_threshold: 55 },
+    { strengths: { d1: 'x' }, weaknesses: { d1: 'y' } },
+    { d1: { action: 'a', rationale: 'b' } });
+    throw new Error('should have thrown');
+  } catch (err) {
+    if (err.code !== 'INVALID_PACK_CONFIG') throw new Error(`wrong error code: ${err.code}`);
+    if (!err.message.includes('interpretation_strategy')) throw new Error('message should mention interpretation_strategy');
+  }
+});
+
+// ─────────────────────────────────────────────────
 console.log(`\n${'═'.repeat(40)}`);
 console.log(`  Passed : ${passed}`);
 console.log(`  Failed : ${failed}`);

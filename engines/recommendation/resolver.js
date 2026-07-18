@@ -4,10 +4,12 @@
  * Resolves assessment_id → validated, merged pack config.
  * Core Engine hanya bergantung pada return value resolver (SPEC-002 §3).
  *
- * @throws UNKNOWN_ASSESSMENT  — assessment_id not in registry
- * @throws UNRESOLVED_PACK     — pack dir/files not found
- * @throws VERSION_MISMATCH    — registry.version ≠ metadata.version
- * @throws INVALID_PACK_CONFIG — pack completeness validation failed
+ * @returns {object} merged pack config, ATAU object error:
+ *   { error: 'UNKNOWN_ASSESSMENT', message }
+ *   { error: 'UNRESOLVED_PACK', message }
+ *   { error: 'VERSION_MISMATCH', message }
+ * @throws {INVALID_PACK_CONFIG} — dilempar oleh loader.loadPack(),
+ *   diteruskan tanpa ditangkap (bukan error request-time)
  */
 
 const registry = require('./registry');
