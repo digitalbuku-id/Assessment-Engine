@@ -439,7 +439,19 @@ test('INVALID_PACK_CONFIG: unsupported scoring_strategy', () => {
     if (err.code !== 'INVALID_PACK_CONFIG') throw new Error(`wrong error code: ${err.code}`);
     if (!err.message.includes('scoring_strategy')) throw new Error('message should mention scoring_strategy');
     if (!err.message.includes('unsupported_strategy')) throw new Error('message should mention the invalid value');
+    if (!err.message.includes('Valid values')) throw new Error('message should include Valid values list');
   }
+});
+
+test('_validateCompleteness accepts valid disc_dual_profile strategy', () => {
+  // Should NOT throw — disc_dual_profile is a supported scoring_strategy
+  _validateCompleteness('test', {
+    pack_id: 'test', dimensions: ['d1'], labels: { d1: 'D1' },
+    scoring_strategy: 'disc_dual_profile',
+  }, { strength_threshold: 80, weakness_threshold: 55 },
+  { strengths: { d1: 'x' }, weaknesses: { d1: 'y' } },
+  { d1: { action: 'a', rationale: 'b' } });
+  // If we reach here, validation passed
 });
 
 test('INVALID_PACK_CONFIG: unsupported graph_strategy', () => {

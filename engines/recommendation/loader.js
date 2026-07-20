@@ -121,6 +121,14 @@ function _validateCompleteness(packId, metadata, thresholds, reasons, actions) {
       `weakness_threshold (${thresholds.weakness_threshold})`);
   }
 
+  // ── Strategy validation (ADR-005 D3) ──
+  for (const field of ['scoring_strategy', 'graph_strategy', 'interpretation_strategy']) {
+    const value = metadata[field] || DEFAULT_STRATEGY[field];
+    if (!SUPPORTED_STRATEGIES[field].includes(value)) {
+      _fail(packId, `${field} '${value}' is not a supported strategy. Valid values: ${SUPPORTED_STRATEGIES[field].join(', ')}`);
+    }
+  }
+
   // For each dimension, validate labels + reasons + actions
   for (const dim of metadata.dimensions) {
     if (!metadata.labels || !metadata.labels[dim]) {
@@ -134,14 +142,6 @@ function _validateCompleteness(packId, metadata, thresholds, reasons, actions) {
     }
     if (!actions[dim]) {
       _fail(packId, `dimension '${dim}' missing in actions`);
-    }
-  }
-
-  // ── Strategy validation (ADR-005 D3) ──
-  for (const field of ['scoring_strategy', 'graph_strategy', 'interpretation_strategy']) {
-    const value = metadata[field] || DEFAULT_STRATEGY[field];
-    if (!SUPPORTED_STRATEGIES[field].includes(value)) {
-      _fail(packId, `${field} '${value}' is not a supported strategy`);
     }
   }
 }
