@@ -485,6 +485,51 @@ test('INVALID_PACK_CONFIG: unsupported interpretation_strategy', () => {
 });
 
 // ─────────────────────────────────────────────────
+console.log('\n\u2550\u2550\u2550 Sprint 3C: Conditional File Requirements (ADR-005 D5 — TASK-025C-C) \u2550\u2550\u2550');
+
+// ── Non-threshold pack loads without thresholds/reasons/actions files ──
+test('loadPack loads non-threshold pack without thresholds/reasons/actions files', () => {
+  const config = loadPack('test-nonthreshold-domain');
+  if (config === null) throw new Error('expected non-null config for non-threshold pack');
+  if (config.pack_id !== 'test-nonthreshold-domain') throw new Error('pack_id mismatch');
+  if (config.scoring_strategy !== 'disc_dual_profile') throw new Error('scoring_strategy mismatch');
+});
+
+test('non-threshold merged config does NOT contain strength_threshold/reasons/actions', () => {
+  const config = loadPack('test-nonthreshold-domain');
+  if ('strength_threshold' in config) throw new Error('strength_threshold should not exist when thresholds.js is absent');
+  if ('weakness_threshold' in config) throw new Error('weakness_threshold should not exist when thresholds.js is absent');
+  if ('reasons' in config) throw new Error('reasons should not exist when reasons.js is absent');
+  if ('actions' in config) throw new Error('actions should not exist when actions.js is absent');
+});
+
+// ── Non-threshold validation skips threshold-specific checks ──
+test('_validateCompleteness does NOT throw for non-threshold strategy without thresholds/reasons/actions', () => {
+  // disc_dual_profile with null thresholds/reasons/actions — should skip threshold block entirely
+  _validateCompleteness('test', {
+    pack_id: 'test', dimensions: ['d1'], labels: { d1: 'D1' },
+    scoring_strategy: 'disc_dual_profile',
+  }, null, null, null);
+  // If we reach here, validation skipped threshold-specific checks as expected
+});
+
+// ── REGRESSION: threshold packs still enforce reasons.strengths per dimension ──
+test('REGRESSION: threshold strategy still throws when reasons.strengths missing for a dimension', () => {
+  try {
+    _validateCompleteness('test', {
+      pack_id: 'test', dimensions: ['x'], labels: { x: 'X' },
+      // no scoring_strategy → defaults to 'threshold'
+    }, { strength_threshold: 80, weakness_threshold: 55 },
+    { strengths: {}, weaknesses: { x: 'b' } }, // strengths.x is missing
+    { x: { action: 'a', rationale: 'b' } });
+    throw new Error('should have thrown');
+  } catch (err) {
+    if (err.code !== 'INVALID_PACK_CONFIG') throw new Error(`wrong error code: ${err.code}`);
+    if (!err.message.includes('reasons.strengths')) throw new Error('message should mention reasons.strengths');
+  }
+});
+
+// ─────────────────────────────────────────────────
 console.log(`\n${'═'.repeat(40)}`);
 console.log(`  Passed : ${passed}`);
 console.log(`  Failed : ${failed}`);
