@@ -174,7 +174,18 @@ ADR ini **tidak** menentukan:
 - RLS policy — bergantung pada apakah ada akses langsung dari browser
   di masa depan (saat ini tidak ada, karena D2 memilih backend-mediated)
 - Retry mechanism atau transaction boundary untuk operasi multi-tabel
-  (mis. apakah `saveResults` + `saveReport` harus atomik)
+  (mis. apakah `saveResults` + `saveReport` harus atomik, atau boleh
+  partial-success) — keputusan ini SENGAJA ditunda ke Sprint P-1/P-2,
+  bukan terlewat. Implementor wajib mendokumentasikan pilihannya secara
+  eksplisit saat menulis `AssessmentRunService`, bukan berasumsi diam-diam.
+- Error ownership — siapa yang menerjemahkan error mentah SDK Supabase
+  menjadi error domain/HTTP:
+  Supabase SDK error → Repository → Application Service → HTTP API
+  Apakah repository melempar error mentah, atau membungkusnya jadi error
+  aplikasi sebelum diteruskan ke Application Service — ini juga SENGAJA
+  ditunda ke Sprint P-1, dengan syarat yang sama: harus didokumentasikan
+  eksplisit di kode/task terkait, bukan diasumsikan diam-diam oleh siapa
+  pun yang menulis repository pertama kali.
 - Interface/nama fungsi persis di tiap repository — itu keputusan
   implementasi Sprint P-1
 
