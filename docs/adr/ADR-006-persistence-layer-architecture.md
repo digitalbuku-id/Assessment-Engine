@@ -2,7 +2,7 @@
 
 | Metadata          | Value                                                  |
 |--------------------|---------------------------------------------------------|
-| **Status**        | Proposed (menunggu PO approval)                          |
+| **Status**        | Accepted (2026-08-03, PO approval)                       |
 | **Date**          | 2026-07-30                                               |
 | **Author**        | Hera (Chief Architect)                                   |
 | **Extends**       | [ADR-001](./ADR-001-recommendation-framework.md) — Core Engine + Domain Pack |
@@ -227,8 +227,10 @@ lewat task/ADR terpisah, bukan diasumsikan dari ADR ini.
 
 ## Status
 
-**Proposed** — menunggu PO approval sebelum Sprint P-1 (Persistence
-Adapter) dijalankan.
+**Accepted** — Sprint P-1 (Persistence Adapter) dapat dimulai.
+Transaction boundary dan error ownership (lihat Non-Goals) tetap
+wajib didokumentasikan eksplisit oleh implementor saat menulis
+`AssessmentRunService`, sesuai catatan di Non-Goals.
 
 ## References
 
