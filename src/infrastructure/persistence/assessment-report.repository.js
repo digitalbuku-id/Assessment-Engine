@@ -1,72 +1,36 @@
 /**
- * Assessment Report Repository
+ * AssessmentReportRepository — contract (interface) untuk persistence
+ * tabel `assessment_reports`.
  *
- * Pure CRUD untuk tabel assessment_reports.
- * Tidak mengandung business logic, scoring, atau orchestration.
- */
-
-const supabase = require('./supabase-client');
-
-const TABLE = 'assessment_reports';
-
-/**
- * Create an assessment report (snapshot of engine output).
+ * ADR-006 D3: repository adalah abstraksi/interface yang INDEPENDEN dari
+ * `core/repository.js` (RepositoryInterface). Application Service (P-2)
+ * bergantung pada contract ini, BUKAN pada implementasi Supabase konkret.
  *
- * @param {object} params
- * @param {string} params.session_id
- * @param {object} params.snapshot_json — the full engine.generate() output
- * @param {string} [params.engine_version] — optional version string
- * @returns {Promise<object>} the created report row
+ * Implementasi konkret: `supabase-assessment-report.repository.js`
+ * (`SupabaseAssessmentReportRepository extends AssessmentReportRepository`).
+ *
+ * Error ownership (diputuskan P-1, ADR-006 Non-Goals) — lihat header
+ * file concrete untuk kebijakan lengkapnya.
  */
-async function create({ session_id, snapshot_json, engine_version }) {
-  const { data, error } = await supabase
-    .from(TABLE)
-    .insert({ session_id, snapshot_json, engine_version })
-    .select()
-    .single();
+class AssessmentReportRepository {
+  /**
+   * Buat report (snapshot output engine).
+   *
+   * @param {object} params
+   * @param {string} params.session_id
+   * @param {object} params.snapshot_json — full output engine.generate()
+   * @param {string} [params.engine_version] — versi engine (opsional)
+   * @returns {Promise<object>} row report yang dibuat
+   */
+  async create(params) { throw new Error('create() must be implemented'); }
 
-  if (error) throw error;
-  return data;
+  /**
+   * Cari report untuk satu session.
+   *
+   * @param {string} sessionId
+   * @returns {Promise<object|null>} row report, atau null jika tidak ada
+   */
+  async findBySessionId(sessionId) { throw new Error('findBySessionId() must be implemented'); }
 }
 
-/**
- * Find a report by its UUID.
- *
- * @param {string} id
- * @returns {Promise<object|null>} the report row, or null if not found
- */
-async function findById(id) {
-  const { data, error } = await supabase
-    .from(TABLE)
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (error) {
-    if (error.code === 'PGRST116') return null;
-    throw error;
-  }
-  return data;
-}
-
-/**
- * Find the report for a given session.
- *
- * @param {string} sessionId
- * @returns {Promise<object|null>}
- */
-async function findBySessionId(sessionId) {
-  const { data, error } = await supabase
-    .from(TABLE)
-    .select('*')
-    .eq('session_id', sessionId)
-    .single();
-
-  if (error) {
-    if (error.code === 'PGRST116') return null;
-    throw error;
-  }
-  return data;
-}
-
-module.exports = { create, findById, findBySessionId };
+module.exports = { AssessmentReportRepository };
