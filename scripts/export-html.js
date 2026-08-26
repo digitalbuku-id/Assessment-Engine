@@ -1,3 +1,4 @@
+import '../lib/otel.cjs';
 import path from 'node:path';
 import { exportHtmlReport } from '../components/html-export.js';
 

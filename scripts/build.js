@@ -1,3 +1,8 @@
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+import sdk from '../lib/otel.cjs';
+
+import { withTrace } from '../lib/traceway.js';
 import { buildAssessment } from '../components/assessment-builder.js';
 import { readFileSync } from 'fs';
 
@@ -13,7 +18,8 @@ async function main() {
     readFileSync('examples/sample-assessment.json', 'utf8')
   );
 
-  const result = await buildAssessment(inputData);
+  const tracedBuild = withTrace('assessment.build', buildAssessment);
+  const result = await tracedBuild(inputData);
 
   if (result.success) {
     console.log(`${green}Assessment built successfully!${reset}`);
@@ -22,11 +28,22 @@ async function main() {
   } else {
     console.log(`${red}Build failed at ${result.stage}${reset}`);
     console.log(`  Error: ${result.error}`);
+  }
+
+  try {
+    await sdk.shutdown();
+    console.log('[Traceway] Spans flushed');
+  } catch (e) {
+    console.error('[Traceway] flush failed:', e.message);
+  }
+
+  if (!result.success) {
     process.exit(1);
   }
 }
 
-main().catch(err => {
+main().catch(async (err) => {
   console.error(`${red}Fatal error:${reset}`, err);
+  try { await sdk.shutdown(); } catch {}
   process.exit(1);
 });

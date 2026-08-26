@@ -21,8 +21,6 @@ yarn-error.log*
 
 # Temporary files
 *.tmp
-*.cjs
-test-*.js
 fix-*.cjs
 
 # IDE
@@ -32,3 +30,6 @@ fix-*.cjs
 # OS files
 .DS_Store
 Thumbs.db
+
+# Traceway
+output/

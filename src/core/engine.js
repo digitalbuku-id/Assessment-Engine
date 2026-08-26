@@ -1,4 +1,5 @@
 // src/core/engine.js
+const { withTrace } = require('../../lib/traceway');
 /**
  * Assessment Engine core orchestrator.
  * Implements SOLID principles: single responsibility (orchestration),
@@ -20,12 +21,14 @@ export class AssessmentEngine {
    * Load assessment data.
    * @param {Array<Object>} rawData - array of raw assessment objects
    */
-  loadData(rawData) {
-    this.logger.info('Loading assessment data');
-    if (!this.validator.isArrayOfObjects(rawData)) {
-      throw new Error('Invalid assessment data format');
-    }
-    this.assessments = rawData.map(d => new (require('../models/assessment.js').Assessment)(d));
+  async loadData(rawData) {
+    return withTrace('loadData', async () => {
+      this.logger.info('Loading assessment data');
+      if (!this.validator.isArrayOfObjects(rawData)) {
+        throw new Error('Invalid assessment data format');
+      }
+      this.assessments = rawData.map(d => new (require('../models/assessment.js').Assessment)(d));
+    })();
   }
 
   /**
