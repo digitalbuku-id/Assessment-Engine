@@ -20,13 +20,24 @@
 5. **Agen tidak menghapus.** Hanya owner yang boleh menghapus. Agen tidak mengubah status, tidak mencentang `Selesai?`, tidak memindah tugas agen lain, tidak mempublikasikan apa pun.
 6. **Satu tugas, satu agen, satu jam.** Setiap agen bekerja hanya di jamnya (lihat `01-Jadwal-dan-Peran-Agen.md`), hanya di folder TASK-nya sendiri, dan menyimpan output dengan nama ber-tanggal.
 
+## Arsitektur aplikasi (dikoreksi 19 Nov 2026 — menggantikan rencana skoring di browser)
+
+Koreksi ini mengikuti ADR-006 repo Assessment-Engine (Accepted; persistence lewat backend Node + Supabase, engine murni domain logic). Rencana awal "skoring di JavaScript browser" **dibatalkan** karena melanggar ADR-006 D2.
+
+- **Plugin WordPress di `hrdlokal.id` adalah SALURAN, bukan mesin skoring.** Plugin hanya: menampilkan soal, menerima jawaban, login peserta, menampilkan hasil. **Tidak ada** logika skoring, rubrik, atau norma di JavaScript browser.
+- **Skoring HANYA di server.** Jawaban mentah dikirim ke Assessment API (Node) → engine menghitung → hasil distempel versi (assessment, scoring, norm, interpretation) → disimpan di Supabase. Hasil yang dikirim browser tidak pernah dipercaya apa adanya.
+- **Satu sumber kebenaran tetap engine + Supabase (ADR-006 TETAP berlaku, tidak dibatalkan).** WordPress tidak menjadi sumber data kedua. `digitalbuku.id` dan `hrdlokal.id` hanya beda saluran dengan engine yang sama.
+- **Hasil diambil dari engine saat dibaca** (konfigurasi/paket terbaru), bukan dari paket data statis yang dibekukan di plugin.
+- **Login dulu (keputusan 19 Nov 2026):** peserta login dengan email atau magic link. Untuk mengurangi friksi, peserta boleh mengerjakan dulu; email diminta saat hasil ditampilkan.
+- **Prasyarat yang belum ada:** Assessment API (`AssessmentRunService` + endpoint HTTP sesuai ADR-006 D5) **belum dibangun** — `src/application/` belum ada di repo. API ini harus dibangun dulu sebelum plugin bisa menghitung skor. Hosting API belum diputuskan.
+
 ## Cara kerja (urutan harian, Senin–Sabtu)
 
 09:30 ChatGPT (koordinator) → 10:30 Grok (audit data mentah) → 11:00 Gemini (logika skoring) → 12:30 Meta AI (teks pengguna) → 13:30 Manus (pemeriksa berkas) → Claude on-demand (coding, hanya instrumen READY + paket lengkap). Viktor: on-demand asisten library alat tes di Slack + pemeriksa status harian 14:30 WIB (aktif sejak 19 Nov 2026).
 
 ## Gelombang
 
-- **Gelombang 0 — Audit (minggu 1):** audit kesiapan 25 instrumen, tanpa membangun. DISC diaudit pertama.
+- **Gelombang 0 — Audit (minggu 1):** audit kesiapan 25 instrumen, tanpa membangun. DISC diaudit pertama — didukung bukti repo: roadmap menempatkan DISC sebagai domain pack berikutnya (Sprint 6) dan paket `disc_dual_profile` + acuan RD-DISC-001 sudah ada di engine.
 - **Gelombang 1 — Pilot DISC:** DISC end-to-end (audit → spesifikasi → naskah → periksa → kode oleh Claude).
 - **Gelombang 2+ — Batch 4–5 instrumen READY** per gelombang. Instrumen BLOCKED menunggu keputusan William.
 
