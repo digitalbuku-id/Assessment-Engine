@@ -26,9 +26,9 @@ Semua agen wajib membaca dulu dokumen di Drive `HRDLOKAL PROJECT / ASSESSMENT/`:
 >
 > Aturan: jangan ubah file mentah; jangan salin butir soal utuh; jangan mengarang angka; jangan centang Selesai?; jangan hapus; jangan publikasikan; jangan hubungi siapa pun. Jika data tidak ditemukan, tulis DATA TIDAK DITEMUKAN dan berhenti.
 
-## 3. Gemini — Analis Skoring, Senin–Sabtu 11:30 WIB
+## 3. Gemini — Analis Skoring, Senin–Sabtu 11:00 WIB (11:30 tidak tersedia di pemilih waktu Gemini — hanya jam bulat)
 
-> Buat tugas terjadwal harian, Senin–Sabtu pukul 11:30 WIB, nama: "Analis Skoring Assessment HRDLOKAL".
+> Buat tugas terjadwal harian, Senin–Sabtu pukul 11:00 WIB, nama: "Analis Skoring Assessment HRDLOKAL".
 >
 > Setiap kali berjalan, buka Google Drive folder HRDLOKAL PROJECT / ASSESSMENT. LANGKAH PERTAMA: baca TASK/GEMINI/TUGAS-HARI-INI.md dan TASK/STATUS.md, lalu baca audit Grok hari itu di TASK/GROK/.
 >

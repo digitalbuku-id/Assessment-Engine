@@ -8,7 +8,7 @@ Semua jam WIB, Senin–Sabtu. Minggu libur. Setiap slot 45 menit kerja + 15 meni
 |---|---|---|---|
 | 09:30 | ChatGPT | Koordinator Assessment | `TUGAS-HARI-INI.md` untuk 4 agen lain + `REKAP-YYYY-MM-DD.md` |
 | 10:30 | Grok | Auditor Kesiapan & Data Mentah | `AUDIT-YYYY-MM-DD-<Instrumen>.md` |
-| 11:30 | Gemini | Analis Logika Skoring | `SPESIFIKASI-YYYY-MM-DD-<Instrumen>.md` |
+| 11:00 | Gemini | Analis Logika Skoring | `SPESIFIKASI-YYYY-MM-DD-<Instrumen>.md` |
 | 12:30 | Meta AI | Penulis Naskah Pengguna | `NASKAH-YYYY-MM-DD-<Instrumen>.md` |
 | 13:30 | Manus | Pemeriksa Build & Berkas | `CHECK-YYYY-MM-DD-<Instrumen>.md` |
 | — (tanpa jadwal) | Claude | Coder on-demand | Kode di Antigravity/GitHub, tugas diambil dari `TASK/CLAUDE/` |
@@ -41,7 +41,7 @@ Catatan: jam 07:00 dan 08:00 sudah tumpang tindih di antara tugas lama (Manus + 
 - Tulis `AUDIT-YYYY-MM-DD-<Instrumen>.md`: isi folder, kelengkapan (soal / lembar jawaban / skoring / norma), dugaan status lisensi, kesesuaian 18+, rekomendasi status: `READY` / `NEEDS_REVIEW` / `BLOCKED-lisensi`.
 - Aturan Grok yang tetap berlaku: status hanya `NEEDS_REVIEW` di checklist lain, tidak mencentang `Selesai?`, tidak mengarang angka, tidak menghubungi siapa pun.
 
-### 11:30 — Gemini, Analis Logika Skoring
+### 11:00 — Gemini, Analis Logika Skoring
 - Baca audit Grok hari itu. **Hanya lanjut jika status READY.** Jika NEEDS_REVIEW/BLOCKED, tulis spesifikasi berisi "TIDAK LANJUT — alasan" dan berhenti.
 - Tulis `SPESIFIKASI-YYYY-MM-DD-<Instrumen>.md`: alur assessment (jumlah soal dari sumber, cara menjawab, rumus skoring, cara interpretasi sebagai refleksi, batasan dan penafian 18+). Tanpa menyalin butir soal utuh.
 - Gemini hanya membaca Drive (retrieve-only) — tidak mengubah file mentah.
