@@ -22,7 +22,7 @@
 
 ## Cara kerja (urutan harian, Senin–Sabtu)
 
-09:30 ChatGPT (koordinator) → 10:30 Grok (audit data mentah) → 11:30 Gemini (logika skoring) → 12:30 Meta AI (teks pengguna) → 13:30 Manus (pemeriksa berkas) → Claude on-demand (coding, hanya instrumen READY + paket lengkap). Viktor: on-demand asisten library alat tes di Slack + (diusulkan, menunggu persetujuan) pemeriksa status harian 14:30 WIB.
+09:30 ChatGPT (koordinator) → 10:30 Grok (audit data mentah) → 11:30 Gemini (logika skoring) → 12:30 Meta AI (teks pengguna) → 13:30 Manus (pemeriksa berkas) → Claude on-demand (coding, hanya instrumen READY + paket lengkap). Viktor: on-demand asisten library alat tes di Slack + pemeriksa status harian 14:30 WIB (aktif sejak 19 Nov 2026).
 
 ## Gelombang
 
