@@ -13,6 +13,7 @@
     @media print {
       .no-print { display: none; }
       body { font-size: 12pt; }
+      .card { box-shadow: none; border: 1px solid #ddd; }
     }
   </style>
 </head>
@@ -79,6 +80,33 @@
   
     
     <section class="mb-5">
+      <h2 class="h3 mb-4">Visual Analytics</h2>
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Competency Profile</h5>
+              <div style="position: relative; height: 400px;">
+                <canvas id="radarChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Score Distribution</h5>
+              <div style="position: relative; height: 400px;">
+                <canvas id="barChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ADD THIS -->
+    
+    <section class="mb-5">
       <h2 class="h3 mb-4">Competency Scores</h2>
       <div class="table-responsive">
         <table class="table table-striped table-hover table-bordered">
@@ -129,7 +157,7 @@
             <p class="text-muted mb-0">Professional assessment and reporting platform</p>
           </div>
           <div class="col-md-6 text-md-end">
-            <p class="mb-1"><small>Generated: 2026-06-30T10:11:41.175Z</small></p>
+            <p class="mb-1"><small>Generated: 2026-08-26T05:07:43.974Z</small></p>
             <p class="text-muted mb-0"><small>&copy; 2026 DigitalBuku. All rights reserved.</small></p>
           </div>
         </div>
@@ -138,5 +166,96 @@
   
   
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  
+    <script src="assets/vendor/chart.umd.js"></script>
+    <script>
+      (function() {
+        const datasets = {"radar":{"labels":["Evidence-Based Decision Making"],"datasets":[{"label":"Randy Lumbantoruan","data":[85],"backgroundColor":"rgba(13, 110, 253, 0.2)","borderColor":"rgba(13, 110, 253, 1)","borderWidth":2,"pointBackgroundColor":"rgba(13, 110, 253, 1)","pointBorderColor":"#fff","pointHoverBackgroundColor":"#fff","pointHoverBorderColor":"rgba(13, 110, 253, 1)"}]},"bar":{"labels":["Evidence-Based Decision Making"],"datasets":[{"label":"Average Score","data":[85],"backgroundColor":["rgba(25, 135, 84, 0.8)"],"borderColor":["rgba(25, 135, 84, 1)"],"borderWidth":1}]}};
+        
+        document.addEventListener('DOMContentLoaded', function() {
+          // Fallback if Chart.js not loaded
+          if (typeof Chart === 'undefined') {
+            console.warn('Chart.js unavailable');
+            window.__chartsReady = true;
+            return;
+          }
+          
+          // Disable animations for PDF export stability
+          Chart.defaults.animation = false;
+          Chart.defaults.animations = {};
+          Chart.defaults.transitions = {};
+          
+          // Render Radar Chart
+          try {
+            const radarCtx = document.getElementById('radarChart');
+            if (radarCtx && datasets.radar) {
+              new Chart(radarCtx, {
+                type: 'radar',
+                data: datasets.radar,
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                    r: {
+                      beginAtZero: true,
+                      max: 100,
+                      ticks: {
+                        stepSize: 20,
+                        font: { size: 10 }
+                      },
+                      pointLabels: {
+                        font: { size: 11, weight: '500' }
+                      }
+                    }
+                  },
+                  plugins: {
+                    legend: {
+                      position: 'bottom',
+                      labels: { font: { size: 11 } }
+                    }
+                  }
+                }
+              });
+            }
+          } catch (e) {
+            console.error('Radar chart error:', e);
+          }
+          
+          // Render Bar Chart
+          try {
+            const barCtx = document.getElementById('barChart');
+            if (barCtx && datasets.bar) {
+              new Chart(barCtx, {
+                type: 'bar',
+                data: datasets.bar,
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      max: 100,
+                      ticks: { font: { size: 11 } }
+                    },
+                    x: {
+                      ticks: { font: { size: 10 } }
+                    }
+                  },
+                  plugins: {
+                    legend: { display: false }
+                  }
+                }
+              });
+            }
+          } catch (e) {
+            console.error('Bar chart error:', e);
+          }
+          
+          // Signal that charts are ready (for Puppeteer PDF export)
+          window.__chartsReady = true;
+        });
+      })();
+    </script>
+    <!-- ADD THIS -->
 </body>
 </html>
