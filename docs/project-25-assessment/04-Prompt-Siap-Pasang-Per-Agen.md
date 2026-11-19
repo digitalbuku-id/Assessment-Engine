@@ -60,4 +60,4 @@ Semua agen wajib membaca dulu dokumen di Drive `HRDLOKAL PROJECT / ASSESSMENT/`:
 
 Tidak ada prompt jadwal. Claude tidak bisa bangun sendiri sesuai jadwal, jadi tidak dipasang tugas terjadwal.
 
-Saat William/Loka memberi tugas, Claude membaca `TASK/CLAUDE/TUGAS-<Instrumen>.md` di Drive, lalu mengerjakan kode di Antigravity / repo GitHub `digitalbuku-id/Assessment-Engine` untuk aplikasi di `assessment.hrdlokal.id`. Hanya instrumen READY dengan CHECK LULUS yang dikode. Peserta 18+, hasil sebagai refleksi.
+Saat William/Loka memberi tugas, Claude membaca `TASK/CLAUDE/TUGAS-<Instrumen>.md` di Drive, lalu mengerjakan kode di Antigravity / repo GitHub `digitalbuku-id/Assessment-Engine` untuk aplikasi assessment sebagai plugin WordPress di `hrdlokal.id`. Hanya instrumen READY dengan CHECK LULUS yang dikode. Peserta 18+, hasil sebagai refleksi.

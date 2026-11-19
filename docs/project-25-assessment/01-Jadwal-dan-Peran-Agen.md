@@ -57,7 +57,7 @@ Catatan: jam 07:00 dan 08:00 sudah tumpang tindih di antara tugas lama (Manus + 
 - Jika LULUS dan instrumen READY, tulis tugas coding ke `TASK/CLAUDE/TUGAS-<Instrumen>.md` untuk diambil Claude on-demand.
 
 ### Tanpa jadwal — Claude, Coder on-demand- **Claude tidak bisa dijadwalkan dan tidak bisa bangun sendiri.** Ini fakta dari Claude sendiri — jadi Claude tidak mendapat slot jam.
-- Claude bekerja saat William/Loka memberinya tugas, mengambil dari `TASK/CLAUDE/TUGAS-<Instrumen>.md`, dan mengerjakan kode di Antigravity / repo GitHub `digitalbuku-id/Assessment-Engine`, untuk aplikasi di `assessment.hrdlokal.id`.
+- Claude bekerja saat William/Loka memberinya tugas, mengambil dari `TASK/CLAUDE/TUGAS-<Instrumen>.md`, dan mengerjakan kode di Antigravity / repo GitHub `digitalbuku-id/Assessment-Engine`, untuk aplikasi assessment sebagai plugin WordPress di `hrdlokal.id`.
 - Hanya instrumen READY dengan paket lengkap (audit + spesifikasi + naskah + CHECK LULUS) yang boleh dikode.
 
 ### On-demand + 14:30 — Viktor, Asisten library alat tes (Slack)
