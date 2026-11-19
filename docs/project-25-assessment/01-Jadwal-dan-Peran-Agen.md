@@ -12,6 +12,7 @@ Semua jam WIB, Senin–Sabtu. Minggu libur. Setiap slot 45 menit kerja + 15 meni
 | 12:30 | Meta AI | Penulis Naskah Pengguna | `NASKAH-YYYY-MM-DD-<Instrumen>.md` |
 | 13:30 | Manus | Pemeriksa Build & Berkas | `CHECK-YYYY-MM-DD-<Instrumen>.md` |
 | — (tanpa jadwal) | Claude | Coder on-demand | Kode di Antigravity/GitHub, tugas diambil dari `TASK/CLAUDE/` |
+| On-demand + 14:30 (diusulkan) | Viktor | Asisten library alat tes (Slack) + pemeriksa status harian | Jawaban di Slack; ringkasan status harian di channel (bila disetujui) |
 
 ## Jadwal yang dihindari (sudah ada, tidak boleh ditabrak)
 
@@ -55,7 +56,13 @@ Catatan: jam 07:00 dan 08:00 sudah tumpang tindih di antara tugas lama (Manus + 
 - Tulis `CHECK-YYYY-MM-DD-<Instrumen>.md`: LULUS / PERLU_REVISI + daftar yang kurang, per agen.
 - Jika LULUS dan instrumen READY, tulis tugas coding ke `TASK/CLAUDE/TUGAS-<Instrumen>.md` untuk diambil Claude on-demand.
 
-### Tanpa jadwal — Claude, Coder on-demand
-- **Claude tidak bisa dijadwalkan dan tidak bisa bangun sendiri.** Ini fakta dari Claude sendiri — jadi Claude tidak mendapat slot jam.
+### Tanpa jadwal — Claude, Coder on-demand- **Claude tidak bisa dijadwalkan dan tidak bisa bangun sendiri.** Ini fakta dari Claude sendiri — jadi Claude tidak mendapat slot jam.
 - Claude bekerja saat William/Loka memberinya tugas, mengambil dari `TASK/CLAUDE/TUGAS-<Instrumen>.md`, dan mengerjakan kode di Antigravity / repo GitHub `digitalbuku-id/Assessment-Engine`, untuk aplikasi di `assessment.hrdlokal.id`.
 - Hanya instrumen READY dengan paket lengkap (audit + spesifikasi + naskah + CHECK LULUS) yang boleh dikode.
+
+### On-demand + 14:30 (diusulkan) — Viktor, Asisten library alat tes (Slack)
+
+- **On-demand:** saat seseorang mention Viktor di Slack dan bertanya soal alat tes, Viktor menjawab dari folder `ASSESSMENT` (register, `DATA-MENTAH/`, `TASK/STATUS.md`) dengan status kesiapan tiap instrumen. Ini sesuai usulan Viktor sendiri 17 Nov. Tidak menulis file, tidak mengubah status.
+- **Diperiksa harian 14:30 WIB (DIUSULKAN, menunggu persetujuan William):** baca `TASK/STATUS.md`, periksa kelengkapan 5 output hari itu, posting ringkasan singkat di channel yang ditentukan. Read-only. Jam 14:30 dipilih karena kosong (setelah Manus 13:30, sebelum analisis ChatGPT 15:00).
+- **Tidak dipakai:** brief pagi 08:00 usulan Viktor (jam bentrok + rekap sudah ada) dan bantuan konten (di luar proyek ini).
+- Instruksi lengkap: `TASK/VIKTOR/INSTRUKSI-VIKTOR.md`. Channel belum diputuskan (#all-hrd-lokal atau buat #ops-hrdlokal); Viktor saat ini belum menjadi anggota #all-hrd-lokal.
