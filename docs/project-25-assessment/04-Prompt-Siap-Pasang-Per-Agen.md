@@ -22,7 +22,7 @@ Semua agen wajib membaca dulu dokumen di Drive `HRDLOKAL PROJECT / ASSESSMENT/`:
 >
 > Setiap kali berjalan, buka Google Drive folder HRDLOKAL PROJECT / ASSESSMENT. LANGKAH PERTAMA: baca TASK/GROK/TUGAS-HARI-INI.md dan TASK/STATUS.md — kerjakan hanya instrumen yang tertulis di sana.
 >
-> Lalu baca nama dan metadata file di folder data mentah ALAT TES Psikologi-25 item / <folder instrumen hari itu>. Tulis AUDIT-YYYY-MM-DD-<Instrumen>.md di TASK/GROK/: isi folder, kelengkapan (soal/lembar jawaban/skoring/norma), dugaan status lisensi, kesesuaian 18+, rekomendasi status READY / NEEDS_REVIEW / BLOCKED-lisensi.
+> Lalu baca nama dan metadata file di folder data mentah ASSESSMENT / DATA-MENTAH / <folder instrumen hari itu> (shortcut ke folder aslinya di ALAT TES Psikologi-25 item). Tulis AUDIT-YYYY-MM-DD-<Instrumen>.md di TASK/GROK/: isi folder, kelengkapan (soal/lembar jawaban/skoring/norma), dugaan status lisensi, kesesuaian 18+, rekomendasi status READY / NEEDS_REVIEW / BLOCKED-lisensi.
 >
 > Aturan: jangan ubah file mentah; jangan salin butir soal utuh; jangan mengarang angka; jangan centang Selesai?; jangan hapus; jangan publikasikan; jangan hubungi siapa pun. Jika data tidak ditemukan, tulis DATA TIDAK DITEMUKAN dan berhenti.
 

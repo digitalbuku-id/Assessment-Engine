@@ -1,6 +1,6 @@
 # Register 25 Asesmen — Status Kesiapan
 
-Sumber: folder Drive `ALAT TES Psikologi-25 item`, diverifikasi 17 Nov 2026 (hanya nama folder/file — isi belum dibuka/dibaca). **Status di bawah ini adalah status awal, bukan hasil audit.** Status hanya berubah lewat audit Grok + keputusan William.
+Sumber: folder Drive `ALAT TES Psikologi-25 item`, diverifikasi 17 Nov 2026 (hanya nama folder/file — isi belum dibuka/dibaca). Shortcut ke semua foldernya ada di `ASSESSMENT / DATA-MENTAH/` (29 shortcut, dibuat 19 Nov 2026). **Status di bawah ini adalah status awal, bukan hasil audit.** Status hanya berubah lewat audit Grok + keputusan William.
 
 - `BELUM-DIAUDIT` — belum ada audit Grok.
 - `READY` — audit menyatakan lengkap + lisensi/kualifikasi tidak bermasalah + cocok 18+.

@@ -17,6 +17,10 @@
 - `TUGAS-HARI-INI.md` (ditulis ChatGPT ke folder tiap agen, ditimpa tiap hari)
 - `TUGAS-<Instrumen>.md` (ditulis Manus ke `TASK/CLAUDE/` saat CHECK LULUS)
 
+## Data mentah
+
+- Data mentah dibaca lewat `ASSESSMENT/DATA-MENTAH/` (shortcut ke folder asli). Jangan memindah, mengganti nama, atau menghapus target shortcut; jangan menyalin isi data mentah ke folder lain (termasuk GitHub).
+
 ## Larangan
 
 - Jangan menulis, mengubah, atau menghapus file di folder TASK agen lain.

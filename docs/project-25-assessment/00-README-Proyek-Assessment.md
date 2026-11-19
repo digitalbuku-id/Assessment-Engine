@@ -2,9 +2,10 @@
 
 **Tujuan:** membangun 25 assessment dari data mentah di Google Drive menjadi aplikasi assessment di `assessment.hrdlokal.id` (subdomain terpisah, halaman WordPress Assessment tetap informatif saja).
 
-**Data mentah:** folder Drive `ALAT TES Psikologi-25 item` — 25 folder instrumen bernomor + folder BONUS + 3 file lepas. Data mentah **tidak dipindah, tidak disalin, tidak diubah**. Semua kerja membaca dari sana dan menyimpan hasil di folder `ASSESSMENT` ini.
+**Data mentah:** folder Drive `ALAT TES Psikologi-25 item` — 25 folder instrumen bernomor + folder BONUS + 3 file lepas. Data mentah **tidak dipindah, tidak disalin, tidak diubah**. Pintu masuknya dari dalam proyek ini adalah folder `DATA-MENTAH/` (berisi shortcut ke semua folder/file asli). Semua kerja membaca dari sana dan menyimpan hasil di folder `ASSESSMENT` ini.
 
 **Lokasi proyek (Drive):** `HRDLOKAL PROJECT / ASSESSMENT`
+- `DATA-MENTAH/` — shortcut ke 25 folder instrumen + BONUS + 3 file lepas di `ALAT TES Psikologi-25 item`. Pintu masuk data mentah dari dalam proyek; bukan salinan.
 - `TASK/` — folder tugas tiap agen. Setiap agen **wajib** memeriksa foldernya sendiri setiap kali bekerja (lihat `02-SOP-Cek-TASK.md`).
   - `TASK/CHATGPT/`, `TASK/GROK/`, `TASK/GEMINI/`, `TASK/META/`, `TASK/MANUS/`, `TASK/CLAUDE/`
 - `OUTPUT/` — hasil per instrumen, satu folder per instrumen (`01-DISC/` sudah dibuat sebagai pilot; folder lain dibuat saat gelombangnya dimulai).

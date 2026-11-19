@@ -36,7 +36,7 @@ Catatan: jam 07:00 dan 08:00 sudah tumpang tindih di antara tugas lama (Manus + 
 - **Tidak** mengubah status di register, **tidak** mencentang `Selesai?`, **tidak** mempublikasikan.
 
 ### 10:30 — Grok, Auditor Kesiapan & Data Mentah
-- Baca tugasnya di `TASK/GROK/TUGAS-HARI-INI.md`, lalu baca **nama dan metadata file** di folder data mentah instrumen hari itu (`ALAT TES Psikologi-25 item / <n. Nama>`).
+- Baca tugasnya di `TASK/GROK/TUGAS-HARI-INI.md`, lalu baca **nama dan metadata file** di folder data mentah instrumen hari itu (`ASSESSMENT / DATA-MENTAH / <n. Nama>` — shortcut ke folder aslinya di `ALAT TES Psikologi-25 item`).
 - Tulis `AUDIT-YYYY-MM-DD-<Instrumen>.md`: isi folder, kelengkapan (soal / lembar jawaban / skoring / norma), dugaan status lisensi, kesesuaian 18+, rekomendasi status: `READY` / `NEEDS_REVIEW` / `BLOCKED-lisensi`.
 - Aturan Grok yang tetap berlaku: status hanya `NEEDS_REVIEW` di checklist lain, tidak mencentang `Selesai?`, tidak mengarang angka, tidak menghubungi siapa pun.
 
