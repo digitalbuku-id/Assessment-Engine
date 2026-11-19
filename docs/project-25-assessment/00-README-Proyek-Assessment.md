@@ -28,7 +28,10 @@ Koreksi ini mengikuti ADR-006 repo Assessment-Engine (Accepted; persistence lewa
 - **Skoring HANYA di server.** Jawaban mentah dikirim ke Assessment API (Node) → engine menghitung → hasil distempel versi (assessment, scoring, norm, interpretation) → disimpan di Supabase. Hasil yang dikirim browser tidak pernah dipercaya apa adanya.
 - **Satu sumber kebenaran tetap engine + Supabase (ADR-006 TETAP berlaku, tidak dibatalkan).** WordPress tidak menjadi sumber data kedua. `digitalbuku.id` dan `hrdlokal.id` hanya beda saluran dengan engine yang sama.
 - **Hasil diambil dari engine saat dibaca** (konfigurasi/paket terbaru), bukan dari paket data statis yang dibekukan di plugin.
-- **Login dulu (keputusan 19 Nov 2026):** peserta login dengan email atau magic link. Untuk mengurangi friksi, peserta boleh mengerjakan dulu; email diminta saat hasil ditampilkan.
+- **Login dulu (keputusan 19 Nov 2026):** peserta login dengan email atau magic link. **Pintu 18+ dan persetujuan data WAJIB di awal** (sebelum soal pertama): konfirmasi usia 18+ + persetujuan pemrosesan data (UU PDP) — tanpa ini tes tidak dimulai. Untuk mengurangi friksi, pembuatan akun (email) boleh di akhir: peserta mengerjakan dulu, email diminta saat hasil ditampilkan, lalu jawaban diikat ke akun yang baru dibuat.
+- **Plugin memanggil API dari sisi server (PHP), bukan dari browser.** Kunci API tidak pernah ada di JavaScript. API wajib punya pembatasan laju (rate limiting) agar kuota B2B tidak bisa dikuras.
+- **Identitas (diusulkan, menunggu konfirmasi William):** WordPress pemilik identitas — `user_id` WP dipetakan ke baris hasil di Supabase; penghapusan data (UU PDP) dijalankan lewat endpoint API yang dipanggil plugin.
+- **Tanpa `interpretation_policy` di pilot DISC.** Konsep itu tidak ada di repo. Pilot memakai keluaran berstempel versi + satu aturan teks tetap. Kebijakan live dirancang setelah ada kode yang bisa diuji.
 - **Prasyarat yang belum ada:** Assessment API (`AssessmentRunService` + endpoint HTTP sesuai ADR-006 D5) **belum dibangun** — `src/application/` belum ada di repo. API ini harus dibangun dulu sebelum plugin bisa menghitung skor. Hosting API belum diputuskan.
 
 ## Cara kerja (urutan harian, Senin–Sabtu)
@@ -38,6 +41,7 @@ Koreksi ini mengikuti ADR-006 repo Assessment-Engine (Accepted; persistence lewa
 ## Gelombang
 
 - **Gelombang 0 — Audit (minggu 1):** audit kesiapan 25 instrumen, tanpa membangun. DISC diaudit pertama — didukung bukti repo: roadmap menempatkan DISC sebagai domain pack berikutnya (Sprint 6) dan paket `disc_dual_profile` + acuan RD-DISC-001 sudah ada di engine.
+- **Tahap 0 — Assessment API (sebelum pilot, tanpa slot harian):** bangun `AssessmentRunService` + endpoint HTTP (ADR-006 D5) dan putuskan hostingnya dulu. Tanpa API ini plugin tidak bisa menghitung skor. Dikerjakan Claude on-demand dipandu Loka/William. Jadwal harian agen TIDAK mencakup tahap ini — jadi estimasi gelombang pilot harus menghitung tahap 0 secara terpisah.
 - **Gelombang 1 — Pilot DISC:** DISC end-to-end (audit → spesifikasi → naskah → periksa → kode oleh Claude).
 - **Gelombang 2+ — Batch 4–5 instrumen READY** per gelombang. Instrumen BLOCKED menunggu keputusan William.
 

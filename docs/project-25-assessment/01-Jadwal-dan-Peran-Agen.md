@@ -59,6 +59,7 @@ Catatan: jam 07:00 dan 08:00 sudah tumpang tindih di antara tugas lama (Manus + 
 ### Tanpa jadwal — Claude, Coder on-demand- **Claude tidak bisa dijadwalkan dan tidak bisa bangun sendiri.** Ini fakta dari Claude sendiri — jadi Claude tidak mendapat slot jam.
 - Claude bekerja saat William/Loka memberinya tugas, mengambil dari `TASK/CLAUDE/TUGAS-<Instrumen>.md`, dan mengerjakan kode di Antigravity / repo GitHub `digitalbuku-id/Assessment-Engine`, untuk aplikasi assessment sebagai plugin WordPress di `hrdlokal.id`.
 - Claude juga membangun Assessment API (Node) yang belum ada — `AssessmentRunService` + endpoint HTTP sesuai ADR-006 D5 — karena plugin **TIDAK BOLEH** menghitung skor di browser; skor hanya dihitung di server (lihat "Arsitektur aplikasi" di `00-README`).
+- **Tahap 0 (sebelum coding instrumen apa pun):** bangun Assessment API dulu, termasuk keputusan hosting. Coding plugin per instrumen baru dimulai setelah API berjalan dan bisa dipanggil plugin dari sisi server (PHP).
 - Hanya instrumen READY dengan paket lengkap (audit + spesifikasi + naskah + CHECK LULUS) yang boleh dikode.
 
 ### On-demand + 14:30 — Viktor, Asisten library alat tes (Slack)
