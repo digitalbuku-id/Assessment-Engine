@@ -2,6 +2,8 @@
 
 **Tujuan:** membangun 25 assessment dari data mentah di Google Drive menjadi aplikasi assessment di dalam WordPress di `hrdlokal.id` (halaman Assessment menjadi aplikasi interaktif; keputusan 19 Nov 2026 menggantikan rencana subdomain `assessment.hrdlokal.id`).
 
+**Pemilik:** Agenth/Randy. **Pelaksana proyek:** William Sie Kapuk (tim IT dept hrdlokal.id).
+
 **Data mentah:** folder Drive `ALAT TES Psikologi-25 item` — 25 folder instrumen bernomor + folder BONUS + 3 file lepas. Data mentah **tidak dipindah, tidak disalin, tidak diubah**. Pintu masuknya dari dalam proyek ini adalah folder `DATA-MENTAH/` (berisi shortcut ke semua folder/file asli). Semua kerja membaca dari sana dan menyimpan hasil di folder `ASSESSMENT` ini.
 
 **Lokasi proyek (Drive):** `HRDLOKAL PROJECT / ASSESSMENT`
