@@ -11,7 +11,7 @@
  * @version  1.0.0
  * @purpose  ARCHITECTURE VALIDATION ONLY
  */
-module.exports = {
+const metadata = {
   // ── REQUIRED ──────────────────────────────────────────
   pack_id: 'sample-domain-b',
   display_name: '[TEST] Sample Domain B — Architecture Validation',
@@ -34,3 +34,6 @@ module.exports = {
     dimension_gamma: '[TEST] Dimension Gamma',
   },
 };
+
+export default metadata;
+export { metadata };

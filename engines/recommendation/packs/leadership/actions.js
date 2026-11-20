@@ -12,7 +12,7 @@
  * @source   RD-001 (Rubric Definition — Leadership Assessment)
  * @mapping  TM-001 (Language Mapping)
  */
-module.exports = {
+const actions = {
   motivation: {
     action:
       'Membantu peserta membangun strategi dan kepercayaan diri untuk memotivasi tim secara lebih konsisten.',
@@ -38,3 +38,6 @@ module.exports = {
       'Feedback adalah dimensi dengan skor terendah ({score}).',
   },
 };
+
+export default actions;
+export { actions };

@@ -2,7 +2,7 @@
  * Threshold Map — per tipe assessment.
  * Externalized agar bisa di-tuning tanpa deploy ulang.
  */
-module.exports = {
+const thresholds = {
   leadership: {
     strength_threshold: 80, // ≥ 80 → strength
     weakness_threshold: 55, // ≤ 55 → weakness
@@ -23,3 +23,6 @@ module.exports = {
     },
   },
 };
+
+export default thresholds;
+export { thresholds };

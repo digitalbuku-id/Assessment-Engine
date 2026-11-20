@@ -1,4 +1,4 @@
-module.exports = {
+const metadata = {
   pack_id: 'test-nonthreshold-domain',
   display_name: 'Test Non-Threshold Domain',
   version: '1.0.0',
@@ -8,3 +8,6 @@ module.exports = {
   graph_strategy: 'disc_profile',
   interpretation_strategy: 'disc_profile',
 };
+
+export default metadata;
+export { metadata };

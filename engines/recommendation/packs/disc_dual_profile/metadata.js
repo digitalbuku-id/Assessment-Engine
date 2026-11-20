@@ -1,4 +1,4 @@
-module.exports = {
+const metadata = {
   pack_id: 'disc_dual_profile',
   version: '1.0.0',
   name: 'DISC Dual Profile Assessment',
@@ -16,3 +16,6 @@ module.exports = {
     conscientiousness: 'Conscientiousness (C)'
   }
 };
+
+export default metadata;
+export { metadata };

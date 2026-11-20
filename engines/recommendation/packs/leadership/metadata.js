@@ -9,7 +9,7 @@
  * @pack_id  leadership
  * @version  2.0.0  (MAJOR — breaking dimension change per SPEC-001)
  */
-module.exports = {
+const metadata = {
   // ── REQUIRED ──────────────────────────────────────────
   pack_id: 'leadership',
   display_name: 'Leadership Assessment',
@@ -35,3 +35,6 @@ module.exports = {
     feedback: 'Feedback',
   },
 };
+
+export default metadata;
+export { metadata };

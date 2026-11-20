@@ -7,7 +7,7 @@
  *
  * @purpose ARCHITECTURE VALIDATION ONLY
  */
-module.exports = {
+const actions = {
   dimension_alpha: {
     action:
       '[TEST PACK] Lakukan tindakan perbaikan untuk dimension_alpha. (Ini aksi uji — bukan rekomendasi produksi.)',
@@ -27,3 +27,6 @@ module.exports = {
       '[TEST PACK] dimension_gamma adalah dimensi terendah ({score}). (Ini rationale uji — bukan rekomendasi produksi.)',
   },
 };
+
+export default actions;
+export { actions };

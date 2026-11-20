@@ -3,7 +3,7 @@
  * Satu action default per dimensi untuk MVP.
  * Placeholder {score} di-substitusi saat runtime.
  */
-module.exports = {
+const actions = {
   leadership: {
     communication: {
       action:
@@ -37,3 +37,6 @@ module.exports = {
     },
   },
 };
+
+export default actions;
+export { actions };

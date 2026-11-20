@@ -17,8 +17,12 @@
  *   1 = errors found
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const DOCS_DIR = path.join(__dirname, '..', 'docs');
 const RUBRICS_DIR = path.join(DOCS_DIR, 'rubrics');
@@ -42,19 +46,19 @@ if (arg === '--all') {
   const domains = findDomains();
   if (domains.length === 0) { console.log('No domains found.\n'); process.exit(0); }
   console.log(`\nValidating traceability for ${domains.length} domain(s)...\n`);
-  const allResults = domains.map(d => validateTraceability(d));
+  const allResults = await Promise.all(domains.map(d => validateTraceability(d)));
   const totalErrors = allResults.reduce((s, r) => s + r.errors.length, 0);
   process.exit(totalErrors > 0 ? 1 : 0);
 }
 
-const result = validateTraceability(arg);
+const result = await validateTraceability(arg);
 process.exit(result.errors.length > 0 ? 1 : 0);
 
 // ──────────────────────────────────────────────
 //  Core validation
 // ──────────────────────────────────────────────
 
-function validateTraceability(domainId) {
+async function validateTraceability(domainId) {
   const errors = [];
   const warnings = [];
 
@@ -125,7 +129,9 @@ function validateTraceability(domainId) {
   // ── 3. Load pack metadata ──
   let metadata;
   try {
-    metadata = require(path.join(PACKS_DIR, domainId, 'metadata.js'));
+    const metaUrl = pathToFileURL(path.join(PACKS_DIR, domainId, 'metadata.js')).href;
+    const metaMod = await import(metaUrl);
+    metadata = metaMod.default || metaMod.metadata || metaMod;
   } catch (err) {
     errors.push(`Cannot load pack metadata: ${err.message}`);
     printResult(errors, warnings);
@@ -137,8 +143,13 @@ function validateTraceability(domainId) {
   // ── 4. Load implementation files ──
   let reasons, actions;
   try {
-    reasons = require(path.join(PACKS_DIR, domainId, 'reasons.js'));
-    actions = require(path.join(PACKS_DIR, domainId, 'actions.js'));
+    const reasonsUrl = pathToFileURL(path.join(PACKS_DIR, domainId, 'reasons.js')).href;
+    const reasonsMod = await import(reasonsUrl);
+    reasons = reasonsMod.default || reasonsMod.reasons || reasonsMod;
+
+    const actionsUrl = pathToFileURL(path.join(PACKS_DIR, domainId, 'actions.js')).href;
+    const actionsMod = await import(actionsUrl);
+    actions = actionsMod.default || actionsMod.actions || actionsMod;
   } catch (err) {
     errors.push(`Cannot load pack files: ${err.message}`);
     printResult(errors, warnings);

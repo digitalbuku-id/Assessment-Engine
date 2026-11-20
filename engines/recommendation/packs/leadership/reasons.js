@@ -9,7 +9,7 @@
  * @source   RD-001 (Rubric Definition — Leadership Assessment)
  * @mapping  TM-001 (Language Mapping)
  */
-module.exports = {
+const reasons = {
   strengths: {
     motivation:
       'Skor {score} mengindikasikan keyakinan bahwa Anda mampu mendorong semangat tim dan menjaga fokus pada pencapaian target.',
@@ -31,3 +31,6 @@ module.exports = {
       'Skor {score} menunjukkan adanya ruang pengembangan dalam membangun keyakinan dan efektivitas saat memberikan feedback yang konstruktif kepada anggota tim.',
   },
 };
+
+export default reasons;
+export { reasons };

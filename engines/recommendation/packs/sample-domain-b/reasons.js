@@ -7,7 +7,7 @@
  *
  * @purpose ARCHITECTURE VALIDATION ONLY
  */
-module.exports = {
+const reasons = {
   strengths: {
     dimension_alpha:
       '[TEST PACK] Skor {score} pada dimension_alpha menunjukkan performa di atas threshold. (Ini teks uji — bukan rekomendasi produksi.)',
@@ -25,3 +25,6 @@ module.exports = {
       '[TEST PACK] Skor {score} pada dimension_gamma berada di bawah threshold. (Ini teks uji — bukan rekomendasi produksi.)',
   },
 };
+
+export default reasons;
+export { reasons };

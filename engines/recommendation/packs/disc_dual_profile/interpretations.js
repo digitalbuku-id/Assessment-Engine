@@ -1,4 +1,4 @@
-module.exports = {
+const interpretations = {
   // Threshold band sesuai RD-DISC-001
   thresholds: {
     high: 70,
@@ -33,3 +33,6 @@ module.exports = {
   normed: false,
   disclaimer: 'Interpretasi ini menggunakan aturan interpretasi internal dan belum didasarkan pada norma populasi Indonesia. Hasil ditujukan sebagai alat refleksi dan pengembangan diri, bukan diagnosis klinis.'
 };
+
+export default interpretations;
+export { interpretations };

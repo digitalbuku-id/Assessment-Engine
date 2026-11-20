@@ -8,8 +8,11 @@
  *
  * @purpose ARCHITECTURE VALIDATION ONLY
  */
-module.exports = {
+const thresholds = {
   strength_threshold: 80, // ≥ 80 → strength (TEST ONLY)
   weakness_threshold: 55, // ≤ 55 → weakness (TEST ONLY)
                            // 56–79 → neutral (tidak muncul)
 };
+
+export default thresholds;
+export { thresholds };

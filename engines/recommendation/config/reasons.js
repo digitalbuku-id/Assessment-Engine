@@ -2,7 +2,7 @@
  * Reason Template Catalog — per tipe assessment + dimensi.
  * Placeholder {score} di-substitusi saat runtime.
  */
-module.exports = {
+const reasons = {
   leadership: {
     strengths: {
       communication:
@@ -30,3 +30,6 @@ module.exports = {
     },
   },
 };
+
+export default reasons;
+export { reasons };

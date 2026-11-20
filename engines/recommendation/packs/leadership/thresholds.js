@@ -8,8 +8,11 @@
  * @migrated-from  engines/recommendation/packs/leadership/thresholds.js (v1.0.0)
  * @updated-for    ADR-003 canonical dimensions
  */
-module.exports = {
+const thresholds = {
   strength_threshold: 80, // ≥ 80 → strength  (rekalibrasi TASK-017)
   weakness_threshold: 55, // ≤ 55 → weakness (rekalibrasi TASK-017)
                            // 56–79 → neutral
 };
+
+export default thresholds;
+export { thresholds };
