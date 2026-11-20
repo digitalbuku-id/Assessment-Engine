@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { renderTemplate } from './template-engine/index.js';
+import { renderTemplate } from './template-engine.js';
 
 /**
  * Transforms and preprocesses raw assessment data for the template engine.
@@ -88,8 +88,12 @@ export async function exportHtmlReport(jsonDataOrPath, outputPath) {
   // Preprocess data
   const processedData = preprocessAssessmentData(data);
   
-  // Render template
-  const htmlContent = renderTemplate(processedData);
+  // Render templates
+  const innerHtml = renderTemplate('report', processedData);
+  const htmlContent = renderTemplate('layout', {
+    ...processedData,
+    content: innerHtml
+  });
   
   // Ensure output directory exists
   const outputDir = path.dirname(outputPath);
