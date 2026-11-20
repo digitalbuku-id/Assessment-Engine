@@ -1,6 +1,6 @@
 # 05 — Skema Tabel & Kontrak Endpoint (DRAFT)
 
-**Status:** DRAFT, 20 Nov 2026 (revisi 3 — 20 Nov 2026, setelah cek 9 poin). Perlu dicek terhadap ADR-001–006 (khususnya ADR-006) sebelum dipakai Tahap 0. Keputusan yang mendasarinya ada di `00-README` bagian "Arsitektur aplikasi" dan ADR-007 (Proposed) — identitas WordPress + UUID, penghapusan idempoten server-ke-server, retensi backup 90 hari, retensi log 2 tahun, sasaran pilot mahasiswa + karyawan 18+.
+**Status:** DRAFT, 20 Nov 2026 (revisi 4 — 20 Nov 2026, setelah cek 6 poin). Perlu dicek terhadap ADR-001–006 (khususnya ADR-006) sebelum dipakai Tahap 0. Keputusan yang mendasarinya ada di `00-README` bagian "Arsitektur aplikasi", ADR-007 (Proposed), dan daftar pertanyaan konsultan di `06-Daftar-Pertanyaan-Konsultan.md`.
 
 ## Prinsip
 - Supabase = satu-satunya sumber kebenaran hasil; WordPress bukan sumber data kedua.
@@ -44,7 +44,7 @@ Log sengaja disimpan di sisi WordPress agar tetap utuh saat Supabase di-restore 
 | `request_type` | varchar(20) NOT NULL | `data_only` (hapus hasil saja) / `account` (hapus hasil + akun WP) — hanya di log WP, TIDAK dikirim ke API |
 | `requested_at` | datetime NOT NULL | Tanggal permintaan — dasar hitung retensi |
 | `status` | varchar(20) NOT NULL | Langkah terakhir yang BERHASIL: `pending` / `api_done` / `wp_done` — tidak ada status `failed` (lihat di bawah) |
-| `api_done_at` | datetime NULL | Waktu API selesai menghapus — dasar replay pasca-restore |
+| `api_done_at` | datetime NULL | Waktu API selesai menghapus — dasar replay pasca-restore Supabase |
 | `expires_at` | datetime NOT NULL | `requested_at` + masa simpan (dihitung saat entri dibuat) |
 | `completed_at` | datetime NULL | Waktu penghapusan selesai |
 | `attempts` | int NOT NULL, default 0 | Jumlah percobaan |
@@ -59,7 +59,7 @@ Log sengaja disimpan di sisi WordPress agar tetap utuh saat Supabase di-restore 
 1. Plugin menulis entri log berstatus `pending` **SEBELUM** memanggil API — supaya UUID tidak hilang dari WordPress (akun terhapus) sebelum log mencatat apa pun.
 2. Plugin memanggil `POST /api/erasures` (server-ke-server, kunci hapus). API menghapus → balas sukses → plugin ubah status jadi `api_done`, isi `api_done_at`.
 3. Hanya bila `request_type = account`: plugin menghapus akun WP → status jadi `wp_done`, isi `completed_at`. Bila `data_only`, penghapusan selesai di langkah 2 (`completed_at` = `api_done_at`).
-4. Bila gagal di langkah mana pun: status TETAP di langkah terakhir yang berhasil (tidak berubah jadi `failed`); `attempts` +1, isi `last_error` dan `next_retry_at` (backoff: 1 jam, lalu 4 jam, lalu 24 jam). **Job ulang berjalan tiap jam** (WP-Cron per jam; 15 menit juga boleh) dan melanjutkan entri dengan status `pending`/`api_done` yang `next_retry_at`-nya sudah lewat. **Batas percobaan: 24 kali** — bila tercapai, beri tahu admin dan tandai untuk penanganan manual. (Angka batas dikonfirmasi ke putaran konsultan: UU PDP dan peraturan turunannya mungkin menetapkan batas waktu menanggapi permintaan subjek data.)
+4. Bila gagal di langkah mana pun: status TETAP di langkah terakhir yang berhasil (tidak berubah jadi `failed`); `attempts` +1, isi `last_error` dan `next_retry_at` (backoff: 1 jam, lalu 4 jam, **dibatasi di 4 jam** — tidak tumbuh sampai 24 jam). **Job ulang berjalan tiap jam** (WP-Cron per jam; 15 menit juga boleh) dan melanjutkan entri dengan status `pending`/`api_done` yang `next_retry_at`-nya sudah lewat. **Tidak ada batas percobaan tetap** — job terus mencoba sampai entri selesai atau ditangani manual. **Peringatan admin berbasis usia permintaan:** bila entri belum selesai lebih dari X jam sejak `requested_at`, beri tahu admin (X ditentukan dari jawaban konsultan atas batas waktu menanggapi permintaan subjek data — lihat 06; sampai ada jawaban dipakai 72 jam sebagai nilai sementara yang dicatat sebagai sementara).
 
 ### Prosedur pasca-restore Supabase
 1. Catat **cap waktu backup** (waktu pembuatan backup Supabase) sebagai bagian dari langkah restore — jangan ditebak.
@@ -72,19 +72,30 @@ Log sengaja disimpan di sisi WordPress agar tetap utuh saat Supabase di-restore 
 ### Prosedur pasca-restore WordPress
 Restore database WP bisa menghidupkan kembali akun yang sudah dihapus. Sumber kebenarannya adalah salinan append-only (di bawah), karena tabel log WP sendiri ikut mundur saat restore.
 1. Catat cap waktu backup WP sebagai bagian dari langkah restore.
-2. Dari salinan append-only, ambil entri dengan `requested_at` lebih baru dari (cap waktu backup WP − 1 jam):
+2. Dari salinan append-only, ambil entri dengan **`event_at` (waktu perubahan status terakhir) lebih baru dari (cap waktu backup WP − 1 jam)**. Yang menentukan adalah kapan akun dihapus, bukan kapan permintaan masuk — permintaan yang masuk sebelum backup tetapi akunnya baru terhapus sesudahnya tetap harus terpilih.
    - status `wp_done` → hapus lagi akun WP-nya (hasil di Supabase sudah terhapus dan Supabase tidak di-restore — tidak perlu diulang).
-   - status `pending` / `api_done` → buat ulang entri log di WP (dengan `requested_at`, `attempts`, dan seterusnya yang asli) dan biarkan job ulang menyelesaikannya (API dipanggil lagi — idempoten — lalu akun dihapus).
+   - status `pending` / `api_done` → buat ulang entri log di WP dengan `requested_at`, `request_type`, dan `event_at` yang asli, **dengan `attempts` direset ke 0** (salinan tidak memuat `attempts`), lalu biarkan job ulang menyelesaikannya (API dipanggil lagi — idempoten — lalu akun dihapus).
 3. Sistem baru dibuka setelah langkah 2 selesai.
 
 ### Salinan append-only (cermin log)
-- Isi: UUID + `requested_at` + status — hanya itu.
-- **Retensi sama dengan log: 2 tahun.** Disimpan satu file per bulan; file yang lebih tua dari 2 tahun dibuang (oleh job yang sama dengan job retensi). Salinan yang abadi akan melanggar retensi yang baru ditetapkan.
+- Isi: UUID + `requested_at` + status + **`request_type`** + **`event_at`** (waktu perubahan status terakhir — dipakai prosedur restore WP). Tanpa `request_type`, entri yang dibuat ulang tidak bisa diselesaikan dengan benar (plugin tidak tahu apakah akun harus dihapus).
+- **Retensi sama dengan log: 2 tahun.** Disimpan satu file per bulan; **file dibuang hanya bila seluruh isinya sudah lewat 2 tahun** — jadi sebagian entri tersimpan sampai sebulan lebih lama. Ini kebijakan yang disengaja, bukan pelanggaran retensi.
 - **Akses terbatas:** disimpan di lokasi dengan akses terbatas (bukan folder Drive proyek bersama yang terlalu longgar) — mis. folder khusus yang hanya dibagikan ke admin/owner, atau bucket terpisah dengan kontrol akses.
 - **Ditulis per peristiwa** (append setiap kali entri log dibuat/diubah) + rekonsiliasi harian. Bila dipakai ekspor batch harian, catat jedanya: ada jendela sampai 24 jam yang bisa hilang bila WordPress di-restore sebelum ekspor berjalan.
 
 ### Kejujuran backup
 Penghapusan hanya terjadi di data aktif; backup 90 hari masih memuat data sampai kedaluwarsa. Pernyataan ini harus masuk kebijakan privasi (putaran cek konsultan). Angka 90 hari adalah target kebijakan — retensi aktual backup bawaan Supabase bergantung paket (paket gratis 7 hari, tidak selalu bisa diatur); verifikasi saat Tahap 0, bila paket tidak mendukung 90 hari putuskan naik paket atau sesuaikan angka dan catat di kebijakan privasi.
+
+### Data yatim di Supabase
+Hasil tanpa pemilik bisa muncul dari jalur yang tidak melewati protokol penghapusan:
+- **Hook `delete_user` di plugin:** penghapusan akun dari jalur mana pun (wp-admin, pembersihan spam) memicu alur penghapusan yang sama — tulis entri log `pending` dulu, lalu panggil API, lalu hapus akun (lihat protokol). Hook dipasang pada `delete_user` (SEBELUM akun dihapus) supaya UUID masih bisa dibaca dari `usermeta`.
+- **Job rekonsiliasi berkala (mingguan):** bandingkan UUID di Supabase (`external_user_id` yang berbeda di `results`) dengan UUID di `usermeta` WordPress. UUID yang ada di Supabase tetapi tidak punya akun WP = yatim → jalankan alur penghapusan untuk UUID itu (atau tandai untuk admin bila ragu). Job ini juga satu-satunya yang menangkap restore WP yang menghilangkan user baru beserta hasil-hasilnya.
+
+### WordPress bukan salinan kedua hasil
+Plugin **tidak menyimpan hasil atau jawaban di WordPress** — tidak di transient, tidak di object cache, tidak di log debug. Halaman hasil **dikecualikan dari page cache** (LiteSpeed Cache) **dan CDN**. Aturan ini makin penting karena `list` kini mengembalikan jawaban mentah — satu salinan jawaban di cache WP sudah melanggar prinsip "Supabase satu-satunya sumber kebenaran hasil".
+
+### Race antara `run` dan penghapusan
+Bila peserta menyelesaikan asesmen saat permintaan hapusnya masih berjalan, hasil baru bisa tertulis setelah penghapusan dan menjadi yatim. Aturan sederhana (ditegakkan plugin — API tidak mengenal log WP): **plugin menolak `run` selama ada entri penghapusan yang belum selesai untuk UUID itu** (status `pending`/`api_done`) — kembalikan error dan minta peserta menghubungi admin. Job rekonsiliasi tetap menjadi jaring pengaman bila ada yang lolos.
 
 ## Agregat (diputuskan 20 Nov 2026)
 - **Dihitung langsung dari `results`** (live). Peserta yang dihapus otomatis keluar dari statistik. Ini yang paling sederhana.
@@ -139,7 +150,7 @@ Penghapusan hanya terjadi di data aktif; backup 90 hari masih memuat data sampai
 ## Catatan implementasi (untuk Tahap 0)
 - ESM, Express/Fastify, Node 20/22. Tanpa `puppeteer` di jalur skoring. Tanpa penyimpanan file lokal/memori proses.
 - Endpoint penghapusan yang idempoten adalah yang memungkinkan prosedur pasca-restore — jangan diubah jadi non-idempoten.
-- Log penghapusan, job ulang (per jam), job retensi (harian), ekspor append-only, dan notifikasi admin adalah tugas plugin WordPress (bukan API) — API hanya menyediakan endpoint idempoten + `api_done_at` lewat responsnya.
+- Log penghapusan, job ulang (per jam), job retensi (harian), ekspor append-only, notifikasi admin, hook `delete_user`, job rekonsiliasi (mingguan), dan penolakan `run` saat penghapusan berjalan adalah tugas plugin WordPress (bukan API) — API hanya menyediakan endpoint idempoten + `api_done_at` lewat responsnya.
 
 ## Keputusan sasaran pilot (diputuskan 20 Nov 2026, William)
-- **Pilot: mahasiswa + karyawan saja (18+).** Siswa SMA di bawah 18 tidak bisa ikut (UU PDP mengatur data anak secara khusus — persetujuan orang tua/wali — di luar cakupan pilot); siswa 18+ (lulusan SMA/SMK) tidak termasuk pilot. Pertanyaan ini tertutup — tidak perlu masuk daftar pertanyaan konsultan.
+- **Pilot: mahasiswa + karyawan saja (18+).** Siswa SMA di bawah 18 tidak bisa ikut (UU PDP mengatur data anak secara khusus — persetujuan orang tua/wali — di luar cakupan pilot); siswa 18+ (lulusan SMA/SMK) tidak termasuk pilot. Sasaran pilot tertutup — tetapi **keabsahan centang 18+ sebagai dasar hukum tetap ditanyakan ke konsultan** (lihat 06).
