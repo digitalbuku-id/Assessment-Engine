@@ -55,7 +55,7 @@ class VersionError extends AssessmentError {
   }
 }
 
-module.exports = {
+export {
   AssessmentError,
   ValidationError,
   EngineError,

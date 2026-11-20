@@ -77,4 +77,4 @@ class Logger {
   }
 }
 
-module.exports = { Logger, LOG_LEVELS };
+export { Logger, LOG_LEVELS };

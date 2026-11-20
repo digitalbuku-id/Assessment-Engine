@@ -1,5 +1,5 @@
-const { ValidationError, EngineError } = require('./core/errors');
-const { Logger } = require('./core/logger');
+import { ValidationError, EngineError } from './core/errors.js';
+import { Logger } from './core/logger.js';
 
 // Test errors
 try {
