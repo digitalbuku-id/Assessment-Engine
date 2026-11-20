@@ -15,7 +15,7 @@
 
 ## Aturan yang mengikat semua agen
 
-1. **Peserta 18+.** Semua assessment hanya untuk 18+. Teks, contoh, dan syarat harus menyatakan itu.
+1. **Peserta 18+.** Semua assessment hanya untuk 18+. Teks, contoh, dan syarat harus menyatakan itu. **Sasaran pilot (diputuskan 20 Nov 2026, William): mahasiswa + karyawan saja (18+).** Siswa SMA di bawah 18 tidak bisa ikut (UU PDP mengatur data anak secara khusus); siswa 18+ (lulusan SMA/SMK) tidak termasuk pilot.
 2. **Refleksi, bukan label/diagnosis.** Hasil assessment adalah bahan refleksi, bukan label permanen, bukan diagnosis, tanpa janji hasil pasti.
 3. **Jangan salin soal utuh.** Jangan mereproduksi butir soal, kunci jawaban, atau norma proprietary apa adanya. Yang ditulis adalah spesifikasi logika, alur, dan teks pengguna — dari audit, bukan dari menyalin isi tes.
 4. **Lisensi dulu, bangun kemudian.** Instrumen berstatus BLOCKED (lisensi/kualifikasi belum terverifikasi — antara lain MMPI, MBTI, 16PF, CFIT) **tidak dibangun** sampai William memutuskan.

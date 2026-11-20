@@ -92,5 +92,5 @@ Penghapusan hanya terjadi di data aktif; backup 90 hari masih memuat data sampai
 - ESM, Express/Fastify, Node 20/22. Tanpa `puppeteer` di jalur skoring. Tanpa penyimpanan file lokal/memori proses.
 - Endpoint `DELETE` yang idempoten adalah yang memungkinkan prosedur pasca-restore — jangan diubah jadi non-idempoten.
 
-## Pertanyaan terbuka (bukan teknis)
-- **Sasaran pilot vs gerbang 18+:** posisi HRDLOKAL menyasar siswa dan mahasiswa, sementara persetujuan berbasis flag 18+. UU PDP mengatur data anak secara khusus (persetujuan orang tua/wali); gerbang 18+ berarti siswa SMA di bawah 18 tidak bisa ikut. Perlu diputuskan sebelum teks persetujuan ditulis: apakah pilot hanya mahasiswa + karyawan (18+), atau termasuk siswa 18+ (lulusan SMA/SMK)? Masuk daftar pertanyaan untuk konsultan.
+## Keputusan sasaran pilot (diputuskan 20 Nov 2026, William)
+- **Pilot: mahasiswa + karyawan saja (18+).** Siswa SMA di bawah 18 tidak bisa ikut (UU PDP mengatur data anak secara khusus — persetujuan orang tua/wali — di luar cakupan pilot); siswa 18+ (lulusan SMA/SMK) tidak termasuk pilot. Pertanyaan ini tertutup — tidak perlu masuk daftar pertanyaan konsultan.
