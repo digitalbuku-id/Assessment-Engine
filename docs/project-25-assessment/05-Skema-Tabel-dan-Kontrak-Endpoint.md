@@ -1,6 +1,6 @@
 # 05 — Skema Tabel & Kontrak Endpoint (DRAFT)
 
-**Status:** DRAFT, 20 Nov 2026 (revisi 4 — 20 Nov 2026, setelah cek 6 poin). Perlu dicek terhadap ADR-001–006 (khususnya ADR-006) sebelum dipakai Tahap 0. Keputusan yang mendasarinya ada di `00-README` bagian "Arsitektur aplikasi", ADR-007 (Proposed), dan daftar pertanyaan konsultan di `06-Daftar-Pertanyaan-Konsultan.md`.
+**Status:** DRAFT, 20 Nov 2026 (revisi 5 — 20 Nov 2026, setelah cek 4 poin + 1 batasan). Perlu dicek terhadap ADR-001–006 (khususnya ADR-006) sebelum dipakai Tahap 0. Keputusan yang mendasarinya ada di `00-README` bagian "Arsitektur aplikasi", ADR-007 (Proposed), dan daftar pertanyaan konsultan di `06-Daftar-Pertanyaan-Konsultan.md`.
 
 ## Prinsip
 - Supabase = satu-satunya sumber kebenaran hasil; WordPress bukan sumber data kedua.
@@ -52,14 +52,15 @@ Log sengaja disimpan di sisi WordPress agar tetap utuh saat Supabase di-restore 
 | `next_retry_at` | datetime NULL | Jadwal ulang berikutnya |
 
 - `usermeta` terkait: `hrdlokal_assessment_uuid` (UUID), `hrdlokal_consent_text_version`, `hrdlokal_consent_at`, `hrdlokal_is_18_plus`.
-- Retensi: 2 tahun dari `requested_at` (konfigurasi `ERASURE_LOG_RETENTION_DAYS=730`, bukan hardcode). Job retensi harian menghapus entri yang SUDAH SELESAI (`wp_done`, atau `api_done` bila `request_type = data_only`) dan `expires_at < now()`. Entri yang belum selesai tidak dihapus job retensi — ditandai untuk ditinjau manual.
+- **Definisi "selesai" (dipakai di semua prosedur di bawah):** belum selesai = `pending`, ATAU `api_done` dengan `request_type = account`. Selesai = `wp_done`, ATAU `api_done` dengan `request_type = data_only`. Untuk `data_only`, status `api_done` sudah selesai — job ulang tidak melanjutkannya.
+- Retensi: 2 tahun dari `requested_at` (konfigurasi `ERASURE_LOG_RETENTION_DAYS=730`, bukan hardcode). Job retensi harian menghapus entri yang SUDAH SELESAI (sesuai definisi di atas) dan `expires_at < now()`. Entri yang belum selesai tidak dihapus job retensi — ditandai untuk ditinjau manual.
 - Angka 2 tahun + rumusan agregat dicek konsultan hukum/praktisi UU PDP dalam satu putaran (belum bisa dipastikan sebagai nasihat hukum sebelum dicek).
 
 ### Protokol penghapusan (per langkah)
 1. Plugin menulis entri log berstatus `pending` **SEBELUM** memanggil API — supaya UUID tidak hilang dari WordPress (akun terhapus) sebelum log mencatat apa pun.
 2. Plugin memanggil `POST /api/erasures` (server-ke-server, kunci hapus). API menghapus → balas sukses → plugin ubah status jadi `api_done`, isi `api_done_at`.
-3. Hanya bila `request_type = account`: plugin menghapus akun WP → status jadi `wp_done`, isi `completed_at`. Bila `data_only`, penghapusan selesai di langkah 2 (`completed_at` = `api_done_at`).
-4. Bila gagal di langkah mana pun: status TETAP di langkah terakhir yang berhasil (tidak berubah jadi `failed`); `attempts` +1, isi `last_error` dan `next_retry_at` (backoff: 1 jam, lalu 4 jam, **dibatasi di 4 jam** — tidak tumbuh sampai 24 jam). **Job ulang berjalan tiap jam** (WP-Cron per jam; 15 menit juga boleh) dan melanjutkan entri dengan status `pending`/`api_done` yang `next_retry_at`-nya sudah lewat. **Tidak ada batas percobaan tetap** — job terus mencoba sampai entri selesai atau ditangani manual. **Peringatan admin berbasis usia permintaan:** bila entri belum selesai lebih dari X jam sejak `requested_at`, beri tahu admin (X ditentukan dari jawaban konsultan atas batas waktu menanggapi permintaan subjek data — lihat 06; sampai ada jawaban dipakai 72 jam sebagai nilai sementara yang dicatat sebagai sementara).
+3. Hanya bila `request_type = account`: plugin menghapus akun WP → status jadi `wp_done`, isi `completed_at`. **Bila akun sudah tidak ada saat langkah ini berjalan, anggap langkah selesai (`wp_done`), bukan error.** Ini juga yang terjadi bila admin menghapus akun lewat wp-admin lalu API gagal di tengah — job ulang akan sampai di langkah 3 dan mendapati akun sudah hilang.
+4. Bila gagal di langkah mana pun: status TETAP di langkah terakhir yang berhasil (tidak berubah jadi `failed`); `attempts` +1, isi `last_error` dan `next_retry_at` (backoff: 1 jam, lalu 4 jam, **dibatasi di 4 jam** — tidak tumbuh sampai 24 jam). **Job ulang berjalan tiap jam** (WP-Cron per jam; 15 menit juga boleh) dan melanjutkan entri yang **belum selesai** (sesuai definisi di atas) yang `next_retry_at`-nya sudah lewat. **Tidak ada batas percobaan tetap** — job terus mencoba sampai entri selesai atau ditangani manual. **Peringatan admin berbasis usia permintaan:** bila entri belum selesai lebih dari X jam sejak `requested_at`, beri tahu admin (X ditentukan dari jawaban konsultan atas batas waktu menanggapi permintaan subjek data — lihat 06; sampai ada jawaban dipakai 72 jam sebagai nilai sementara yang dicatat sebagai sementara).
 
 ### Prosedur pasca-restore Supabase
 1. Catat **cap waktu backup** (waktu pembuatan backup Supabase) sebagai bagian dari langkah restore — jangan ditebak.
@@ -74,7 +75,9 @@ Restore database WP bisa menghidupkan kembali akun yang sudah dihapus. Sumber ke
 1. Catat cap waktu backup WP sebagai bagian dari langkah restore.
 2. Dari salinan append-only, ambil entri dengan **`event_at` (waktu perubahan status terakhir) lebih baru dari (cap waktu backup WP − 1 jam)**. Yang menentukan adalah kapan akun dihapus, bukan kapan permintaan masuk — permintaan yang masuk sebelum backup tetapi akunnya baru terhapus sesudahnya tetap harus terpilih.
    - status `wp_done` → hapus lagi akun WP-nya (hasil di Supabase sudah terhapus dan Supabase tidak di-restore — tidak perlu diulang).
-   - status `pending` / `api_done` → buat ulang entri log di WP dengan `requested_at`, `request_type`, dan `event_at` yang asli, **dengan `attempts` direset ke 0** (salinan tidak memuat `attempts`), lalu biarkan job ulang menyelesaikannya (API dipanggil lagi — idempoten — lalu akun dihapus).
+   - status `api_done` dengan `request_type = account` → buat ulang entri log di WP dengan `requested_at`, `request_type`, dan `event_at` yang asli, **dengan `attempts` direset ke 0** (salinan tidak memuat `attempts`), lalu biarkan job ulang menyelesaikannya (API dipanggil lagi — idempoten — lalu akun dihapus).
+   - status `api_done` dengan `request_type = data_only` → **cukup dibuat ulang sebagai baris log selesai, tanpa memicu pemanggilan API** (hasil di Supabase sudah terhapus; akun memang tidak pernah dimaksudkan untuk dihapus).
+   - status `pending` → buat ulang entri log dan biarkan job ulang menyelesaikannya.
 3. Sistem baru dibuka setelah langkah 2 selesai.
 
 ### Salinan append-only (cermin log)
@@ -88,14 +91,19 @@ Penghapusan hanya terjadi di data aktif; backup 90 hari masih memuat data sampai
 
 ### Data yatim di Supabase
 Hasil tanpa pemilik bisa muncul dari jalur yang tidak melewati protokol penghapusan:
-- **Hook `delete_user` di plugin:** penghapusan akun dari jalur mana pun (wp-admin, pembersihan spam) memicu alur penghapusan yang sama — tulis entri log `pending` dulu, lalu panggil API, lalu hapus akun (lihat protokol). Hook dipasang pada `delete_user` (SEBELUM akun dihapus) supaya UUID masih bisa dibaca dari `usermeta`.
-- **Job rekonsiliasi berkala (mingguan):** bandingkan UUID di Supabase (`external_user_id` yang berbeda di `results`) dengan UUID di `usermeta` WordPress. UUID yang ada di Supabase tetapi tidak punya akun WP = yatim → jalankan alur penghapusan untuk UUID itu (atau tandai untuk admin bila ragu). Job ini juga satu-satunya yang menangkap restore WP yang menghilangkan user baru beserta hasil-hasilnya.
+- **Hook `delete_user` di plugin:** penghapusan akun dari jalur mana pun (wp-admin, pembersihan spam) memicu alur penghapusan yang sama — tulis entri log `pending` dulu, lalu panggil API, lalu hapus akun (lihat protokol). Hook dipasang pada `delete_user` (SEBELUM akun dihapus) supaya UUID masih bisa dibaca dari `usermeta`. **Penjaga anti-pemicu-diri:** hook melewati UUID yang sudah punya entri log yang belum selesai, atau yang sedang diproses plugin sendiri (plugin menandai penghapusan yang dipicunya sendiri, mis. lewat transient/flag sementara, sebelum menghapus akun di langkah 3). Tanpa penjaga ini, langkah 3 protokol akan memicu hook, membuat entri log kedua, dan memanggil API lagi.
+- **Job rekonsiliasi berkala (mingguan):** bandingkan UUID di Supabase (lewat `POST /api/results/uuids`) dengan UUID di `usermeta` WordPress. Job ini juga satu-satunya yang menangkap restore WP yang menghilangkan user baru beserta hasil-hasilnya. **Pengaman — job ini tidak boleh menjadi penghapus massal:**
+  - Jangan hapus langsung. Tandai dulu sebagai kandidat yatim (dengan `first_seen_at`); hapus hanya setelah **masa tunggu 14 hari DAN terdeteksi di dua run berturut-turut**.
+  - **Batalkan run dan beri tahu admin** bila jumlah yatim melebihi ambang (lebih dari 5% dari total UUID di Supabase atau lebih dari 50 — mana yang tercapai dulu), atau bila query `usermeta` gagal, atau bila jumlah UUID yang dikembalikan jauh lebih sedikit dari run sebelumnya. Tiga kondisi ini menandakan query rusak atau WordPress baru di-restore ke backup lama — bukan yatim sungguhan.
+  - **Batasi jumlah penghapusan per run** (maks. 10 per run, konfigurasi).
+  - Penghapusan kandidat yang lolos semua pengaman tetap lewat alur penghapusan yang sama (entri log → API). Karena akunnya sudah tidak ada, langkah 3 akan mendapati akun hilang dan menganggapnya selesai (lihat protokol).
 
 ### WordPress bukan salinan kedua hasil
 Plugin **tidak menyimpan hasil atau jawaban di WordPress** — tidak di transient, tidak di object cache, tidak di log debug. Halaman hasil **dikecualikan dari page cache** (LiteSpeed Cache) **dan CDN**. Aturan ini makin penting karena `list` kini mengembalikan jawaban mentah — satu salinan jawaban di cache WP sudah melanggar prinsip "Supabase satu-satunya sumber kebenaran hasil".
 
 ### Race antara `run` dan penghapusan
-Bila peserta menyelesaikan asesmen saat permintaan hapusnya masih berjalan, hasil baru bisa tertulis setelah penghapusan dan menjadi yatim. Aturan sederhana (ditegakkan plugin — API tidak mengenal log WP): **plugin menolak `run` selama ada entri penghapusan yang belum selesai untuk UUID itu** (status `pending`/`api_done`) — kembalikan error dan minta peserta menghubungi admin. Job rekonsiliasi tetap menjadi jaring pengaman bila ada yang lolos.
+Bila peserta menyelesaikan asesmen saat permintaan hapusnya masih berjalan, hasil baru bisa tertulis setelah penghapusan dan menjadi yatim. Aturan sederhana (ditegakkan plugin — API tidak mengenal log WP): **plugin menolak `run` selama ada entri penghapusan yang belum selesai untuk UUID itu** (sesuai definisi "belum selesai" di atas) — kembalikan error dan minta peserta menghubungi admin. Job rekonsiliasi tetap menjadi jaring pengaman bila ada yang lolos.
+- **Batasan yang diketahui:** `run` yang sedang berjalan saat penghapusan `data_only` dimulai bisa menulis hasil baru sesudah penghapusan selesai. Rekonsiliasi tidak menangkapnya karena akunnya masih ada. Risikonya kecil (jendela hanya selama `run` itu berjalan), tetapi dicatat di sini sebagai batasan, bukan sebagai celah yang tertutup.
 
 ## Agregat (diputuskan 20 Nov 2026)
 - **Dihitung langsung dari `results`** (live). Peserta yang dihapus otomatis keluar dari statistik. Ini yang paling sederhana.
@@ -104,9 +112,9 @@ Bila peserta menyelesaikan asesmen saat permintaan hapusnya masih berjalan, hasi
 - Tabel snapshot agregat terpisah DITUNDA — baru dipertimbangkan bila laporan B2B butuh agregat yang bertahan setelah penghapusan.
 
 ## Kontrak endpoint (Vercel Serverless Functions)
-- **Auth — kunci dipisah per fungsi:** `API_KEY_RUN` untuk `run`, `get`, dan `list`; `API_KEY_DELETE` khusus untuk `erasures` dan `erasures/batch` (kunci berbeda — kebocoran satu kunci tidak membuka penghapusan massal). Header `x-api-key: <kunci>`, server-ke-server saja (plugin PHP). 401 bila kunci hilang/salah.
-- **Rotasi kunci:** dukung dua kunci aktif bersamaan (kunci berjalan + kunci sebelumnya) dengan masa tumpang tindih, supaya rotasi tidak memutus plugin.
-- **Rate limit — butuh penyimpanan bersama** (Vercel KV / Upstash Redis / Vercel WAF), BUKAN hitungan di memori proses — tiap invokasi serverless terpisah. `run`/`get`/`list` mis. 100 req/menit per kunci; `erasures` (satuan) 10 req/menit; `erasures/batch` 10 req/menit dengan maks. 100 UUID per panggilan (efektif sampai 1.000 UUID/menit untuk replay). Semua angka konfigurasi.
+- **Auth — kunci dipisah per fungsi:** `API_KEY_RUN` untuk `run`, `get`, dan `list`; `API_KEY_DELETE` khusus untuk `erasures` dan `erasures/batch`; **`API_KEY_ADMIN` khusus untuk `results/uuids`** (kunci ketiga — endpoint ini membuka daftar seluruh peserta, jadi tidak boleh memakai kunci lain). Header `x-api-key: <kunci>`, server-ke-server saja (plugin PHP). 401 bila kunci hilang/salah.
+- **Rotasi kunci:** dukung dua kunci aktif bersamaan (kunci berjalan + kunci sebelumnya) dengan masa tumpang tindih, supaya rotasi tidak memutus plugin. Berlaku untuk ketiga kunci.
+- **Rate limit — butuh penyimpanan bersama** (Vercel KV / Upstash Redis / Vercel WAF), BUKAN hitungan di memori proses — tiap invokasi serverless terpisah. `run`/`get`/`list` mis. 100 req/menit per kunci; `erasures` (satuan) 10 req/menit; `erasures/batch` 10 req/menit dengan maks. 100 UUID per panggilan (efektif sampai 1.000 UUID/menit untuk replay); `results/uuids` 10 req/menit. Semua angka konfigurasi.
 - **Format error:** `{ "error": { "code": "<kode>", "message": "<pesan>" } }`.
 
 ### `POST /api/assessments/:id/run`
@@ -127,6 +135,13 @@ Bila peserta menyelesaikan asesmen saat permintaan hapusnya masih berjalan, hasi
 - Mengembalikan semua hasil peserta itu (mendukung pengerjaan ulang + hak akses data sendiri menurut UU PDP), terbaru dulu.
 - **Diputuskan:** jawaban mentah (`answers`) TERMASUK dalam hasil yang dikembalikan — jawaban adalah data pribadi peserta dan hak akses mencakup data sendiri.
 - Sukses 200: `{ "results": [ { "result_id": "…", "assessment_id": "…", "answers": {…}, "result": {…}, "versions": {…}, "created_at": "…" }, … ] }`.
+- Error: 400 validasi, 401, 429, 500.
+
+### `POST /api/results/uuids`
+- Body: `{ "page": <n>, "page_size": <n> }` (`page_size` maks. 1000).
+- Mengembalikan UUID yang berbeda di `results`, berhalaman — dipakai job rekonsiliasi mingguan di plugin untuk membandingkan dengan UUID di `usermeta`.
+- Hanya server-ke-server dengan `API_KEY_ADMIN` (kunci ketiga, terpisah). Rate limit 10 req/menit.
+- Sukses 200: `{ "uuids": ["<uuid>", …], "page": <n>, "total_pages": <n>, "total_uuids": <n> }`.
 - Error: 400 validasi, 401, 429, 500.
 
 ### `POST /api/erasures`
@@ -150,7 +165,7 @@ Bila peserta menyelesaikan asesmen saat permintaan hapusnya masih berjalan, hasi
 ## Catatan implementasi (untuk Tahap 0)
 - ESM, Express/Fastify, Node 20/22. Tanpa `puppeteer` di jalur skoring. Tanpa penyimpanan file lokal/memori proses.
 - Endpoint penghapusan yang idempoten adalah yang memungkinkan prosedur pasca-restore — jangan diubah jadi non-idempoten.
-- Log penghapusan, job ulang (per jam), job retensi (harian), ekspor append-only, notifikasi admin, hook `delete_user`, job rekonsiliasi (mingguan), dan penolakan `run` saat penghapusan berjalan adalah tugas plugin WordPress (bukan API) — API hanya menyediakan endpoint idempoten + `api_done_at` lewat responsnya.
+- Log penghapusan, job ulang (per jam), job retensi (harian), ekspor append-only, notifikasi admin, hook `delete_user` (dengan penjaga anti-pemicu-diri), job rekonsiliasi (mingguan, dengan pengaman), dan penolakan `run` saat penghapusan berjalan adalah tugas plugin WordPress (bukan API) — API hanya menyediakan endpoint idempoten + `api_done_at` lewat responsnya, ditambah `POST /api/results/uuids` untuk rekonsiliasi.
 
 ## Keputusan sasaran pilot (diputuskan 20 Nov 2026, William)
 - **Pilot: mahasiswa + karyawan saja (18+).** Siswa SMA di bawah 18 tidak bisa ikut (UU PDP mengatur data anak secara khusus — persetujuan orang tua/wali — di luar cakupan pilot); siswa 18+ (lulusan SMA/SMK) tidak termasuk pilot. Sasaran pilot tertutup — tetapi **keabsahan centang 18+ sebagai dasar hukum tetap ditanyakan ke konsultan** (lihat 06).

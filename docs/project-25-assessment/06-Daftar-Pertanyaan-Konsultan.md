@@ -1,8 +1,8 @@
-# 06 — Daftar Pertanyaan Konsultan Hukum / Praktisi UU PDP (DRAFT)
+# 06 — Daftar Pertanyaan Konsultan Hukum / Praktisi UU PDP (DRAFT FINAL)
 
-**Status:** DRAFT, 20 Nov 2026. Satu putaran cek sebelum kebijakan privasi diterbitkan dan sebelum ADR-007 naik dari Proposed ke Accepted. Bukan nasihat hukum sampai dijawab konsultan.
+**Status:** DRAFT FINAL, 20 Nov 2026 — siap dikirim ke konsultan. Satu putaran cek sebelum kebijakan privasi diterbitkan dan sebelum ADR-007 naik dari Proposed ke Accepted. Bukan nasihat hukum sampai dijawab konsultan.
 
-**Konteks untuk konsultan:** HRDLOKAL (hrdlokal.id) menjalankan asesmen online untuk peserta 18+ (pilot: mahasiswa + karyawan). Login dan identitas dipegang WordPress (UUID acak per peserta sebagai pengenal, tanpa email/nama di sisi hasil); hasil dan jawaban mentah disimpan di Supabase dan diakses lewat Assessment API (Node, Vercel serverless) — keduanya servernya di luar Indonesia. Penghapusan bersifat API-dahulu dan idempoten, dicatat per langkah di log WordPress (retensi 2 tahun), backup 90 hari. Agregat dihitung langsung dari data aktif (tidak dijanjikan bertahan setelah penghapusan). Keputusan lengkap ada di `00-README` (bagian Arsitektur aplikasi), `05-Skema-Tabel-dan-Kontrak-Endpoint.md` (revisi 4), dan ADR-007 (Proposed).
+**Konteks untuk konsultan:** HRDLOKAL (hrdlokal.id) menjalankan asesmen online untuk peserta 18+ (pilot: mahasiswa + karyawan). Login dan identitas dipegang WordPress (hosting Hostinger — lokasi data center perlu dicatat; WordPress menyimpan nama dan email peserta). Hasil dan jawaban mentah disimpan di Supabase (region proyek perlu dicatat) dan diakses lewat Assessment API (Node, Vercel serverless — region fungsi perlu dicatat). Ketiganya menyimpan atau memproses data pribadi, jadi ketiganya masuk dalam pertanyaan transfer lintas negara (no. 7). Penghapusan bersifat API-dahulu dan idempoten, dicatat per langkah di log WordPress (retensi 2 tahun), backup 90 hari. Agregat dihitung langsung dari data aktif (tidak dijanjikan bertahan setelah penghapusan). Keputusan lengkap ada di `00-README` (bagian Arsitektur aplikasi), `05-Skema-Tabel-dan-Kontrak-Endpoint.md` (revisi 5), dan ADR-007 (Proposed).
 
 ## Pertanyaan
 
@@ -28,19 +28,31 @@
 
 ### 6. Retensi hasil asesmen
 **Yang kami lakukan sekarang:** hasil dan jawaban mentah disimpan tanpa batas waktu otomatis — belum ada kebijakan retensi hasil.
-**Yang perlu dikonfirmasi:** berapa lama hasil asesmen boleh disimpan? Apakah ada kewajiban menghapus hasil setelah jangka waktu tertentu, atau setelah peserta tidak aktif?
+**Usulan untuk dikonfirmasi:** hapus atau anonimkan hasil setelah 24 bulan tanpa aktivitas peserta. Apakah angka dan rumusan ini dapat diterima, atau ada kewajiban lain (mis. retensi minimum)?
 
 ### 7. Transfer data ke luar negeri
-**Yang kami lakukan sekarang:** Supabase dan Vercel dipakai sebagai penyimpanan dan hosting API; servernya berada di luar Indonesia.
-**Yang perlu dikonfirmasi:** apa yang disyaratkan UU PDP untuk transfer data pribadi ke luar negeri (kecukupan perlindungan, persetujuan, pengamanan)? Apakah perlu langkah tambahan sebelum memakai layanan ini?
+**Yang kami lakukan sekarang:** tiga layanan dipakai — WordPress (Hostinger), Supabase, dan Vercel — dan masing-masing menyimpan atau memproses data pribadi; lokasi server ketiganya perlu dicatat (data center Hostinger, region proyek Supabase, region fungsi Vercel).
+**Yang perlu dikonfirmasi:** apa yang disyaratkan UU PDP untuk transfer data pribadi ke luar negeri (kecukupan perlindungan, persetujuan, pengamanan)? Apakah perlu langkah tambahan sebelum memakai layanan-layanan ini?
 
 ### 8. Perjanjian pemrosesan dengan Supabase dan Vercel
-**Yang kami lakukan sekarang:** belum ada perjanjian pemrosesan data (DPA) dengan Supabase atau Vercel.
-**Yang perlu dikonfirmasi:** apakah kami wajib memiliki perjanjian pemrosesan dengan keduanya sebagai pemroses? Apa yang harus dimuat perjanjian itu?
+**Yang kami lakukan sekarang:** belum ada perjanjian pemrosesan data (DPA) dengan Supabase atau Vercel (juga belum dengan Hostinger sebagai penyedia hosting WordPress).
+**Yang perlu dikonfirmasi:** apakah kami wajib memiliki perjanjian pemrosesan dengan ketiganya sebagai pemroses? Apa yang harus dimuat perjanjian itu?
 
 ### 9. Kewajiban bila terjadi kebocoran data
 **Yang kami lakukan sekarang:** belum ada prosedur tertulis untuk kebocoran data.
 **Yang perlu dikonfirmasi:** apa kewajiban pemberitahuan bila terjadi kebocoran (kepada siapa, dalam waktu berapa lama, isi pemberitahuan apa saja)? Apa yang harus disiapkan terlebih dahulu (prosedur internal, pencatatan)?
+
+### 10. Klasifikasi data hasil asesmen
+**Yang kami lakukan sekarang:** hasil asesmen kepribadian, minat, dan psikometrik diperlakukan sebagai data pribadi biasa (pseudonim lewat UUID), dengan perlindungan standar di dokumen 05.
+**Yang perlu dikonfirmasi:** apakah hasil asesmen seperti ini termasuk data pribadi spesifik menurut UU PDP, dengan kewajiban tambahan? Jawabannya mengubah banyak hal lain dalam spesifikasi ini, jadi perlu dijawab lebih dulu.
+
+### 11. Penilaian dampak dan pejabat pelindung data
+**Yang kami lakukan sekarang:** belum ada penilaian dampak pelindungan data (DPIA) dan belum ada pejabat pelindung data (DPO) yang ditunjuk.
+**Yang perlu dikonfirmasi:** apakah pemrosesan ini mewajibkan penilaian dampak pelindungan data atau penunjukan pejabat pelindung data — baik pada skala pilot maupun skala penuh?
+
+### 12. Penarikan persetujuan
+**Yang kami lakukan sekarang:** penarikan persetujuan ditangani lewat alur penghapusan yang sama (permintaan lewat WordPress → API menghapus dulu → akun dihapus bila diminta); belum ada batas waktu tersendiri untuk penarikan.
+**Yang perlu dikonfirmasi:** bagaimana kaitan penarikan persetujuan dengan penghapusan menurut UU PDP, dan adakah batas waktu tersendiri untuk menanggapinya?
 
 ## Setelah dijawab
 - Jawaban dicatat di dokumen ini (tanggal + ringkasan + sumber).
