@@ -1,6 +1,6 @@
 # 05 — Skema Tabel & Kontrak Endpoint (DRAFT)
 
-**Status:** DRAFT, 20 Nov 2026. Perlu dicek terhadap ADR-001–006 (khususnya ADR-006) sebelum dipakai Tahap 0. Keputusan yang mendasarinya ada di `00-README` bagian "Arsitektur aplikasi" (identitas WordPress + UUID, penghapusan idempoten server-ke-server, retensi backup 90 hari, retensi log 2 tahun).
+**Status:** DRAFT, 20 Nov 2026 (revisi 1 — 20 Nov 2026, setelah cek 4 poin). Perlu dicek terhadap ADR-001–006 (khususnya ADR-006) sebelum dipakai Tahap 0. Keputusan yang mendasarinya ada di `00-README` bagian "Arsitektur aplikasi" (identitas WordPress + UUID, penghapusan idempoten server-ke-server, retensi backup 90 hari, retensi log 2 tahun).
 
 ## Prinsip
 - Supabase = satu-satunya sumber kebenaran hasil; WordPress bukan sumber data kedua.
@@ -34,23 +34,39 @@ Satu baris = satu kali pengerjaan (peserta boleh mengerjakan ulang — tanpa uni
 - RLS: hanya `service_role` (API server-side). Tidak ada akses `anon`/`authenticated` — browser tidak pernah menyentuh Supabase langsung (ADR-006).
 
 ## Tabel WordPress: `wp_hrdlokal_erasure_log` (bukan di Supabase)
-Log sengaja disimpan di sisi WordPress agar tetap utuh saat Supabase di-restore dari backup — log inilah yang dipakai memutar ulang penghapusan pasca-restore.
+Log sengaja disimpan di sisi WordPress agar tetap utuh saat Supabase di-restore dari backup — log inilah yang dipakai memutar ulang penghapusan pasca-restore. Log harus lebih "awet" daripada data yang dihapusnya.
 
 | Kolom | Tipe | Keterangan |
 |---|---|---|
 | `id` | bigint PK auto-increment | |
 | `external_user_id` | char(36) NOT NULL, index | UUID peserta |
 | `requested_at` | datetime NOT NULL | Tanggal permintaan — dasar hitung retensi |
-| `status` | varchar(20) NOT NULL | `requested` / `completed` / `failed` |
+| `status` | varchar(20) NOT NULL | `pending` / `api_done` / `wp_done` / `failed` — status PER LANGKAH (lihat protokol) |
 | `expires_at` | datetime NOT NULL | `requested_at` + masa simpan (dihitung saat entri dibuat) |
 | `completed_at` | datetime NULL | Waktu penghapusan selesai |
+| `last_error` | text NULL | Pesan error terakhir (untuk job ulang) |
 
 - `usermeta` terkait: `hrdlokal_assessment_uuid` (UUID), `hrdlokal_consent_text_version`, `hrdlokal_consent_at`, `hrdlokal_is_18_plus`.
 - Retensi: 2 tahun dari `requested_at` (konfigurasi `ERASURE_LOG_RETENTION_DAYS=730`, bukan hardcode). Job terjadwal (harian, WP-Cron) menghapus entri dengan `expires_at < now()`.
 - Angka 2 tahun + rumusan agregat dicek konsultan hukum/praktisi UU PDP dalam satu putaran (belum bisa dipastikan sebagai nasihat hukum sebelum dicek).
 
+### Protokol penghapusan (per langkah)
+1. Plugin menulis entri log berstatus `pending` **SEBELUM** memanggil API — supaya UUID tidak hilang dari WordPress (akun terhapus) sebelum log mencatat apa pun.
+2. Plugin memanggil `DELETE /api/results/by-user/:uuid` (server-ke-server, kunci hapus). API menghapus → balas sukses → plugin ubah status jadi `api_done`.
+3. Plugin menghapus akun WP → status jadi `wp_done`, isi `completed_at`.
+4. Bila gagal di langkah mana pun → status `failed` + `last_error`; **job ulang harian** melanjutkan entri yang masih `pending` atau `api_done`.
+
+### Prosedur pasca-restore
+1. Catat **cap waktu backup** (waktu pembuatan backup Supabase) sebagai bagian dari langkah restore — jangan ditebak.
+2. Sebelum sistem dibuka: jalankan ulang penghapusan untuk semua entri log dengan `requested_at` LEBIH BARU dari cap waktu backup (idempoten — aman diulang).
+3. Sistem baru dibuka setelah replay selesai.
+
+### Kejujuran backup
+Penghapusan hanya terjadi di data aktif; backup 90 hari masih memuat data sampai kedaluwarsa. Pernyataan ini harus masuk kebijakan privasi (putaran cek konsultan).
+
 ## Kontrak endpoint (Vercel Serverless Functions)
-- **Auth:** header `x-api-key: <API_KEY>` — server-ke-server saja (plugin PHP). 401 bila kunci hilang/salah. Rate limit per kunci (mis. 100 req/menit, konfigurasi).
+- **Auth — kunci dipisah per fungsi:** `API_KEY_RUN` untuk `run` + `get result`; `API_KEY_DELETE` khusus untuk `delete by-user` (kunci berbeda — kebocoran satu kunci tidak membuka penghapusan massal). Header `x-api-key: <kunci>`, server-ke-server saja (plugin PHP). 401 bila kunci hilang/salah.
+- **Rate limit:** `run`/`get` mis. 100 req/menit per kunci; `delete` jauh lebih ketat, mis. 10 req/menit (konfigurasi).
 - **Format error:** `{ "error": { "code": "<kode>", "message": "<pesan>" } }`.
 
 ### `POST /api/assessments/:id/run`
@@ -65,7 +81,7 @@ Log sengaja disimpan di sisi WordPress agar tetap utuh saat Supabase di-restore 
 
 ### `DELETE /api/results/by-user/:external_uuid`
 - Menghapus SEMUA hasil peserta itu. **Idempoten:** mengembalikan 200 `{ "deleted_count": <n> }` bahkan bila `n = 0` (sudah terhapus).
-- Hanya server-ke-server (kunci rahasia); API tidak mempercayai `external_user_id` dari klien.
+- Hanya server-ke-server dengan `API_KEY_DELETE`; API tidak mempercayai `external_user_id` dari klien.
 - Dipakai juga untuk memutar ulang penghapusan setelah restore backup.
 - Error: 401, 429, 500.
 
@@ -75,3 +91,6 @@ Log sengaja disimpan di sisi WordPress agar tetap utuh saat Supabase di-restore 
 ## Catatan implementasi (untuk Tahap 0)
 - ESM, Express/Fastify, Node 20/22. Tanpa `puppeteer` di jalur skoring. Tanpa penyimpanan file lokal/memori proses.
 - Endpoint `DELETE` yang idempoten adalah yang memungkinkan prosedur pasca-restore — jangan diubah jadi non-idempoten.
+
+## Pertanyaan terbuka (bukan teknis)
+- **Sasaran pilot vs gerbang 18+:** posisi HRDLOKAL menyasar siswa dan mahasiswa, sementara persetujuan berbasis flag 18+. UU PDP mengatur data anak secara khusus (persetujuan orang tua/wali); gerbang 18+ berarti siswa SMA di bawah 18 tidak bisa ikut. Perlu diputuskan sebelum teks persetujuan ditulis: apakah pilot hanya mahasiswa + karyawan (18+), atau termasuk siswa 18+ (lulusan SMA/SMK)? Masuk daftar pertanyaan untuk konsultan.
