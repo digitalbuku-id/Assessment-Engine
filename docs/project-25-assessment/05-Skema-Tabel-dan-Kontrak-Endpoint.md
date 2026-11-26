@@ -1,14 +1,21 @@
 # 05 — Skema Tabel & Kontrak Endpoint (DRAFT)
 
-**Status:** DRAFT, 20 Nov 2026 (revisi 6 — 20 Nov 2026, setelah cek 3 poin). Perlu dicek terhadap ADR-001–006 (khususnya ADR-006) sebelum dipakai Tahap 0. Keputusan yang mendasarinya ada di `00-README` bagian "Arsitektur aplikasi", ADR-007 (Proposed), dan daftar pertanyaan konsultan di `06-Daftar-Pertanyaan-Konsultan.md`.
+**Status:** DRAFT, 20 Nov 2026 (revisi 7 — 20 Nov 2026, setelah cek janji teks vs fitur spesifikasi). Perlu dicek terhadap ADR-001–006 (khususnya ADR-006) sebelum dipakai Tahap 0. Keputusan yang mendasarinya ada di `00-README` bagian "Arsitektur aplikasi", ADR-007 (Proposed), dan daftar pertanyaan konsultan di `06-Daftar-Pertanyaan-Konsultan.md`.
 
 ## Prinsip
 - Supabase = satu-satunya sumber kebenaran hasil; WordPress bukan sumber data kedua.
 - PII seminimal mungkin di Supabase: tanpa email/nama.
 - `external_user_id` = UUID acak dari `usermeta` WordPress.
 - Semua hasil berstempel versi (assessment, scoring, norm, interpretation).
-- Aturan: retensi backup (90 hari) tidak boleh melebihi retensi log penghapusan (2 tahun).
+- Aturan: retensi backup (90 hari Supabase, 6 minggu WordPress) tidak boleh melebihi retensi log penghapusan (2 tahun).
 - **Privasi URL:** tidak ada pengenal pribadi (UUID peserta, dsb.) di path ATAU query string URL — pengenal dikirim lewat body POST. Log infrastruktur (Vercel/proxy) tetap masuk cakupan kebijakan privasi.
+
+## Tujuan pemrosesan (diputuskan 20 Nov 2026)
+Data peserta dipakai untuk empat tujuan ini saja — menambah tujuan belakangan berarti persetujuan ulang:
+1. Menghitung skor dan menampilkan hasil asesmen kepada peserta.
+2. Statistik gabungan (agregat) — dihitung langsung dari data aktif, tidak dijanjikan bertahan setelah penghapusan.
+3. **Mengkalibrasi norma dan memperbaiki soal — hanya dalam bentuk agregat dan dihitung langsung (live).** Bila datamu dihapus, kontribusimu keluar dari perhitungan itu. Tidak pernah dipakai untuk mengidentifikasi individu, dan tidak pernah dijual.
+4. Menjalankan alur penghapusan dan pencatatan kepatuhan (log penghapusan, rekonsiliasi).
 
 ## Tabel Supabase: `results`
 Satu baris = satu kali pengerjaan (peserta boleh mengerjakan ulang — tanpa unique constraint user+assessment).
@@ -51,7 +58,7 @@ Log sengaja disimpan di sisi WordPress agar tetap utuh saat Supabase di-restore 
 | `last_error` | text NULL | Pesan error terakhir |
 | `next_retry_at` | datetime NULL | Jadwal ulang berikutnya |
 
-- `usermeta` terkait: `hrdlokal_assessment_uuid` (UUID — **dibuat saat asesmen pertama, bukan saat registrasi**, supaya akun spam dan akun tanpa asesmen tidak pernah masuk alur penghapusan), `hrdlokal_consent_text_version`, `hrdlokal_consent_at`, `hrdlokal_is_18_plus`.
+- `usermeta` terkait: `hrdlokal_assessment_uuid` (UUID — **dibuat saat asesmen pertama, bukan saat registrasi**, supaya akun spam dan akun tanpa asesmen tidak pernah masuk alur penghapusan; **pembuatan harus atomik**, mis. `add_user_meta` dengan `unique=true`, supaya dua permintaan serentak tidak menghasilkan dua UUID untuk satu orang), `hrdlokal_consent_text_version`, `hrdlokal_consent_at`, `hrdlokal_is_18_plus`.
 - **Definisi "selesai" (dipakai di semua prosedur di bawah):** belum selesai = `pending`, ATAU `api_done` dengan `request_type = account`. Selesai = `wp_done`, ATAU `api_done` dengan `request_type = data_only`. Untuk `data_only`, status `api_done` sudah selesai — job ulang tidak melanjutkannya.
 - Retensi: 2 tahun dari `requested_at` (konfigurasi `ERASURE_LOG_RETENTION_DAYS=730`, bukan hardcode). Job retensi harian menghapus entri yang SUDAH SELESAI (sesuai definisi di atas) dan `expires_at < now()`. Entri yang belum selesai tidak dihapus job retensi — ditandai untuk ditinjau manual.
 - Angka 2 tahun + rumusan agregat dicek konsultan hukum/praktisi UU PDP dalam satu putaran (belum bisa dipastikan sebagai nasihat hukum sebelum dicek).
@@ -86,8 +93,25 @@ Restore database WP bisa menghidupkan kembali akun yang sudah dihapus. Sumber ke
 - **Akses terbatas:** disimpan di lokasi dengan akses terbatas (bukan folder Drive proyek bersama yang terlalu longgar) — mis. folder khusus yang hanya dibagikan ke admin/owner, atau bucket terpisah dengan kontrol akses.
 - **Ditulis per peristiwa** (append setiap kali entri log dibuat/diubah) + rekonsiliasi harian. Bila dipakai ekspor batch harian, catat jedanya: ada jendela sampai 24 jam yang bisa hilang bila WordPress di-restore sebelum ekspor berjalan.
 
-### Kejujuran backup
-Penghapusan hanya terjadi di data aktif; backup 90 hari masih memuat data sampai kedaluwarsa. Pernyataan ini harus masuk kebijakan privasi (putaran cek konsultan). Angka 90 hari adalah target kebijakan — retensi aktual backup bawaan Supabase bergantung paket (paket gratis 7 hari, tidak selalu bisa diatur); verifikasi saat Tahap 0, bila paket tidak mendukung 90 hari putuskan naik paket atau sesuaikan angka dan catat di kebijakan privasi.
+### Kejujuran backup (kedua sisi)
+Penghapusan hanya terjadi di data aktif; backup masih memuat data sampai kedaluwarsa. Pernyataan ini harus masuk kebijakan privasi (putaran cek konsultan) — **untuk kedua sisi**:
+- **Supabase:** backup 90 hari (target kebijakan — retensi aktual backup bawaan Supabase bergantung paket; paket gratis 7 hari, tidak selalu bisa diatur; verifikasi saat Tahap 0, bila paket tidak mendukung 90 hari putuskan naik paket atau sesuaikan angka dan catat di kebijakan privasi). Data di backup Supabase: hasil + jawaban (pseudonim UUID).
+- **WordPress/Hostinger (paket Premium, backup mingguan):** backup disimpan **sampai 6 minggu** (pusat bantuan Hostinger; perjanjian hosting hanya menjanjikan 2 minggu — dipakai angka terpanjang, 6 minggu, supaya pernyataan kejujuran tidak meremehkan). Data di backup WordPress: nama, email, akun, dan UUID. Bila dipakai plugin backup, retensinya terpisah — periksa dan catat.
+- Aturan "retensi backup tidak boleh melebihi retensi log (2 tahun)" berlaku untuk **kedua sisi** — terpenuhi (90 hari dan 6 minggu, keduanya jauh di bawah 2 tahun).
+
+### Retensi hasil (24 bulan tanpa aktivitas)
+- **Definisi "aktivitas":** pengerjaan asesmen terakhir — `MAX(created_at)` di `results` untuk UUID itu. (Bukan login: yang disimpan adalah hasil, jadi yang menua adalah hasil.)
+- **Mekanisme:** job mingguan WordPress mengambil daftar UUID beserta `last_activity_at`-nya lewat `POST /api/results/uuids`; UUID yang aktivitas terakhirnya sudah melewati 24 bulan diberitahu dulu lewat email **30 hari sebelum penghapusan otomatis** (supaya peserta bisa mempertahankan datanya dengan mengerjakan asesmen lagi — yang memperbarui aktivitas terakhir), lalu dihapus lewat alur penghapusan `data_only` yang sama (entri log → API) supaya tercatat.
+- **Hapus saja, tanpa opsi anonimkan.** Anonimisasi jawaban mentah sulit dibuktikan benar-benar tidak bisa ditautkan, dan bila anonimisasi dipakai, ia bertentangan dengan janji "agregat tidak bertahan setelah penghapusan".
+- Angka 24 bulan dan pemberitahuan 30 hari disimpan sebagai konfigurasi (bukan hardcode). Angka 24 bulan adalah usulan di dokumen 06 pertanyaan 6 — menunggu konfirmasi konsultan.
+
+### Hak akses dan koreksi
+- **Akses:** halaman akun (plugin) menampilkan hasil + jawaban mentah peserta (lewat `POST /api/results/list`). Bila halaman akun belum ada, akses dilayani lewat permintaan manual ke admin.
+- **Koreksi:** hasil dihitung dari jawaban — jawaban tidak diedit dan hasil tidak diubah manual. Koreksi ditangani manual: peserta **mengerjakan ulang asesmen** (run baru) atau **meminta hasil dihapus**. Teks persetujuan tidak menjanjikan lebih dari ini.
+- Hak lain (keberatan atas pemrosesan otomatis/profiling, portabilitas) masuk pertanyaan 13 dokumen 06 — belum diatur di pilot.
+
+### Persetujuan ulang saat versi teks berubah
+Bila versi teks persetujuan berubah, plugin meminta persetujuan ulang sebelum `run` berikutnya: bandingkan `hrdlokal_consent_text_version` di `usermeta` dengan versi terbaru; bila berbeda, tampilkan teks baru dan minta centang ulang sebelum `run`. Tanpa persetujuan ulang, `run` ditolak.
 
 ### Data yatim di Supabase
 Hasil tanpa pemilik bisa muncul dari jalur yang tidak melewati protokol penghapusan:
@@ -113,13 +137,14 @@ Bila peserta menyelesaikan asesmen saat permintaan hapusnya masih berjalan, hasi
 
 ## Kontrak endpoint (Vercel Serverless Functions)
 - **Auth — kunci dipisah per fungsi:** `API_KEY_RUN` untuk `run`, `get`, dan `list`; `API_KEY_DELETE` khusus untuk `erasures` dan `erasures/batch`; **`API_KEY_ADMIN` khusus untuk `results/uuids`** (kunci ketiga — endpoint ini membuka daftar seluruh peserta, jadi tidak boleh memakai kunci lain). Header `x-api-key: <kunci>`, server-ke-server saja (plugin PHP). 401 bila kunci hilang/salah.
-- **Rotasi kunci:** dukung dua kunci aktif bersamaan (kunci berjalan + kunci sebelumnya) dengan masa tumpang tindih, supaya rotasi tidak memutus plugin. Berlaku untuk ketiga kunci.
+- **Rotasi kunci:** dukung dua kunci aktif bersamaan (kunci berjalan + kunci sebelumnya) dengan masa tumpang tindih, supaya rotasi tidak memutus plugin. Berlaku untuk ketiga kunci. **Jadwal rotasi: tiap 6 bulan, dan segera bila ada anggota tim yang memiliki akses keluar dari tim.**
 - **Rate limit — butuh penyimpanan bersama** (Vercel KV / Upstash Redis / Vercel WAF), BUKAN hitungan di memori proses — tiap invokasi serverless terpisah. `run`/`get`/`list` mis. 100 req/menit per kunci; `erasures` (satuan) 10 req/menit; `erasures/batch` 10 req/menit dengan maks. 100 UUID per panggilan (efektif sampai 1.000 UUID/menit untuk replay); `results/uuids` 10 req/menit. Semua angka konfigurasi.
 - **Format error:** `{ "error": { "code": "<kode>", "message": "<pesan>" } }`.
 
 ### `POST /api/assessments/:id/run`
 - Body: `{ "external_user_id": "<uuid>", "answers": {…}, "consent": { "text_version": "<versi>", "at": "<ISO-8601>", "is_18_plus": true } }`.
 - Validasi: `consent` wajib + `is_18_plus` true, bila tidak → 400. `external_user_id` ditentukan plugin dari sesi WP — JANGAN pernah dari klien.
+- **Persetujuan ulang:** bila `consent.text_version` lebih lama dari versi terbaru (bandingkan dengan `hrdlokal_consent_text_version` di `usermeta`), plugin meminta persetujuan ulang sebelum `run` — tampilkan teks baru, minta centang ulang; tanpa itu `run` ditolak.
 - Sukses 201: `{ "result_id": "<uuid>", "versions": { "assessment": "…", "scoring": "…", "norm": "…", "interpretation": "…" } }`.
 - Error: 400 validasi, 401 auth, 429 rate limit, 500.
 
@@ -140,8 +165,9 @@ Bila peserta menyelesaikan asesmen saat permintaan hapusnya masih berjalan, hasi
 ### `POST /api/results/uuids`
 - Body: `{ "after": "<uuid terakhir dari halaman sebelumnya, atau null untuk halaman pertama>", "page_size": <n, maks. 1000> }`.
 - Mengembalikan UUID yang berbeda di `results`, **dengan kursor, bukan nomor halaman** — himpunan UUID berubah saat penghapusan atau pengerjaan baru terjadi di antara dua halaman, sehingga offset bisa melewatkan UUID atau menghitung dua kali, dan offset lambat di data besar. Urutan tetap (mis. `external_user_id` menaik); `after` menandai posisi terakhir yang sudah dibaca. Ketidakstabilan ini berbahaya bagi pengaman rekonsiliasi, yang menilai selisih jumlah.
+- Setiap entri memuat **`last_activity_at`** (pengerjaan asesmen terakhir untuk UUID itu, `MAX(created_at)` di `results`) — dipakai job retensi hasil (24 bulan) dan job rekonsiliasi.
 - Hanya server-ke-server dengan `API_KEY_ADMIN` (kunci ketiga, terpisah). Rate limit 10 req/menit.
-- Sukses 200: `{ "uuids": ["<uuid>", …], "next_after": "<uuid terakhir di halaman ini, atau null bila habis>", "has_more": <bool> }`.
+- Sukses 200: `{ "uuids": [ { "external_user_id": "<uuid>", "last_activity_at": "<ISO-8601>" }, … ], "next_after": "<uuid terakhir di halaman ini, atau null bila habis>", "has_more": <bool> }`.
 - Error: 400 validasi, 401, 429, 500.
 
 ### `POST /api/erasures`
@@ -165,7 +191,7 @@ Bila peserta menyelesaikan asesmen saat permintaan hapusnya masih berjalan, hasi
 ## Catatan implementasi (untuk Tahap 0)
 - ESM, Express/Fastify, Node 20/22. Tanpa `puppeteer` di jalur skoring. Tanpa penyimpanan file lokal/memori proses.
 - Endpoint penghapusan yang idempoten adalah yang memungkinkan prosedur pasca-restore — jangan diubah jadi non-idempoten.
-- Log penghapusan, job ulang (per jam, memakai batch untuk antrean), job retensi (harian), ekspor append-only, notifikasi admin, hook `delete_user` (hanya tulis `pending`, tanpa panggilan API sinkron), job rekonsiliasi (mingguan, dengan pengaman), dan penolakan `run` saat penghapusan berjalan adalah tugas plugin WordPress (bukan API) — API hanya menyediakan endpoint idempoten + `api_done_at` lewat responsnya, ditambah `POST /api/results/uuids` (kursor) untuk rekonsiliasi.
+- Log penghapusan, job ulang (per jam, memakai batch untuk antrean), job retensi (harian), job retensi hasil (mingguan, 24 bulan + pemberitahuan 30 hari), ekspor append-only, notifikasi admin, hook `delete_user` (hanya tulis `pending`, tanpa panggilan API sinkron), job rekonsiliasi (mingguan, dengan pengaman), halaman akun (menampilkan hasil + jawaban), pengecekan persetujuan ulang sebelum `run`, dan penolakan `run` saat penghapusan berjalan adalah tugas plugin WordPress (bukan API) — API hanya menyediakan endpoint idempoten + `api_done_at` lewat responsnya, ditambah `POST /api/results/uuids` (kursor, beserta `last_activity_at`) untuk rekonsiliasi dan retensi hasil.
 
 ## Keputusan sasaran pilot (diputuskan 20 Nov 2026, William)
 - **Pilot: mahasiswa + karyawan saja (18+).** Siswa SMA di bawah 18 tidak bisa ikut (UU PDP mengatur data anak secara khusus — persetujuan orang tua/wali — di luar cakupan pilot); siswa 18+ (lulusan SMA/SMK) tidak termasuk pilot. Sasaran pilot tertutup — tetapi **keabsahan centang 18+ sebagai dasar hukum tetap ditanyakan ke konsultan** (lihat 06).

@@ -19,12 +19,12 @@ Semua instrumen: peserta 18+, hasil sebagai refleksi (bukan label/diagnosis).
 | 6 | Army Alpha | 6. ARMY ALPHA | BELUM-DIAUDIT | |
 | 7 | Big Five | 7. BIG FIVE | BELUM-DIAUDIT | |
 | 8 | Holland | 8. HOLLAND | BELUM-DIAUDIT | |
-| 9 | DISC | 9. DISC | BELUM-DIAUDIT — **pilot Gelombang 1** | Ada `APLIKASI SKORING DISC.xlsx` + `SOAL & Lembar Jawaban DISC.pdf` (2019); ada DISC interpretation pack di GitHub |
+| 9 | DISC | 9. DISC | BELUM-DIAUDIT — **pilot Gelombang 1** | Ada `APLIKASI SKORING DISC.xlsx` + `SOAL & Lembar Jawaban DISC.pdf` (2019); ada DISC interpretation pack di GitHub; lisensi DIIZINKAN William 23 Nov 2026 |
 | 10 | MBTI | 10. MBTI | BELUM-DIAUDIT — waspada lisensi | Proprietary/terbatas, kemungkinan BLOCKED |
 | 11 | MSAI | 11. MSAI | BELUM-DIAUDIT | |
 | 12 | MSDT | 12. MSDT | BELUM-DIAUDIT | |
 | 13 | PAPI Kostick | 13. PAPIKOSTICK | BELUM-DIAUDIT | |
-| 14 | RMIB | 14. RMIB | BELUM-DIAUDIT | Ada juga file zip RMIB & KPR-V di root folder |
+| 14 | RMIB | 14. RMIB | BELUM-DIAUDIT | Ada juga file zip RMIB & KPR-V di root folder; lisensi DIIZINKAN William 23 Nov 2026; prototipe tes-minat-rmib sudah jadi & terverifikasi |
 | 15 | TIU 5 | 15. TIU 5 | BELUM-DIAUDIT | |
 | 16 | TIU 6 | 16. TIU 6 | BELUM-DIAUDIT | |
 | 17 | Wartegg Test | 17. Wartegg Test | BELUM-DIAUDIT | Tes proyektif — butuh penilai berkualifikasi; kemungkinan BLOCKED untuk aplikasi mandiri |

@@ -36,8 +36,8 @@ Region Supabase dipilih saat proyek dibuat — pindah belakangan berarti migrasi
 **Yang perlu dikonfirmasi:** apakah UU PDP dan peraturan turunannya menetapkan batas waktu menanggapi permintaan penghapusan/akses subjek data? Angka berapa yang harus dipakai sebagai X?
 
 ### 6. Retensi hasil asesmen
-**Yang kami lakukan sekarang:** hasil dan jawaban mentah disimpan tanpa batas waktu otomatis — belum ada kebijakan retensi hasil.
-**Usulan untuk dikonfirmasi:** hapus atau anonimkan hasil setelah 24 bulan tanpa aktivitas peserta. Apakah angka dan rumusan ini dapat diterima, atau ada kewajiban lain (mis. retensi minimum)?
+**Yang kami lakukan sekarang:** job mingguan WordPress mencari UUID yang aktivitas terakhirnya (pengerjaan asesmen terakhir) melewati 24 bulan, memberitahu peserta 30 hari sebelumnya, lalu menghapus lewat alur penghapusan `data_only` yang sama (tercatat di log).
+**Usulan untuk dikonfirmasi:** hapus hasil setelah 24 bulan tanpa aktivitas peserta, dengan pemberitahuan 30 hari sebelumnya. Opsi anonimkan tidak dipakai — anonimisasi jawaban mentah sulit dibuktikan tidak bisa ditautkan dan bertentangan dengan janji agregat tidak bertahan. Apakah angka dan rumusan ini dapat diterima, atau ada kewajiban lain (mis. retensi minimum)?
 
 ### 7. Transfer data ke luar negeri
 **Yang kami lakukan sekarang:** tiga layanan dipakai — WordPress (Hostinger), Supabase, dan Vercel — dan masing-masing menyimpan atau memproses data pribadi; lokasi server ketiganya dicatat di tabel Lokasi layanan di atas.
